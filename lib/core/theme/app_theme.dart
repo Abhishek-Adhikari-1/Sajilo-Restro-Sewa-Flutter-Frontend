@@ -37,7 +37,18 @@ class AppTheme {
         selectedItemColor: _seedColor,
         unselectedItemColor: Color(0xFF757575),
         type: BottomNavigationBarType.fixed,
-        elevation: 8,
+        elevation: 0,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        elevation: 0,
+        backgroundColor: const Color(0xFFFFFBF7),
+        indicatorColor: _seedColor.withValues(alpha: 0.15),
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+      ),
+      navigationRailTheme: NavigationRailThemeData(
+        elevation: 0,
+        backgroundColor: const Color(0xFFFFFBF7),
+        indicatorColor: _seedColor.withValues(alpha: 0.15),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: const Color(0xFFF5F5F5),
@@ -47,10 +58,12 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
       dialogTheme: DialogThemeData(
+        elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         backgroundColor: const Color(0xFFFFFBF7),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
+        elevation: 0,
         backgroundColor: Color(0xFFFFFBF7),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -97,7 +110,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: Colors.white,
         surfaceTintColor: Colors.transparent,
-        elevation: 1,
+        elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: const BorderSide(color: Color(0xFFE0E0E0), width: 0.5),
@@ -137,7 +150,18 @@ class AppTheme {
         selectedItemColor: _seedColor,
         unselectedItemColor: Color(0xFF9E9E9E),
         type: BottomNavigationBarType.fixed,
-        elevation: 8,
+        elevation: 0,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        elevation: 0,
+        backgroundColor: const Color(0xFF1A1208),
+        indicatorColor: _seedColor.withValues(alpha: 0.25),
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+      ),
+      navigationRailTheme: NavigationRailThemeData(
+        elevation: 0,
+        backgroundColor: const Color(0xFF1A1208),
+        indicatorColor: _seedColor.withValues(alpha: 0.25),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: const Color(0xFF1A1208),
@@ -150,10 +174,12 @@ class AppTheme {
         ),
       ),
       dialogTheme: DialogThemeData(
+        elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         backgroundColor: const Color(0xFF1A1208),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
+        elevation: 0,
         backgroundColor: Color(0xFF1A1208),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),

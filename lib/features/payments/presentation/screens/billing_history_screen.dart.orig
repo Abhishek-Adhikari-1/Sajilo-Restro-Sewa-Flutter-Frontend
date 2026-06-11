@@ -1,0 +1,331 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/loading_shimmer.dart';
+import '../cubit/billing_history_cubit.dart';
+import '../cubit/billing_history_state.dart';
+
+class BillingHistoryScreen extends StatefulWidget {
+  const BillingHistoryScreen({super.key});
+
+  @override
+  State<BillingHistoryScreen> createState() => _BillingHistoryScreenState();
+}
+
+class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
+  final _scrollController = ScrollController();
+  final currencyFormat = NumberFormat.currency(
+    symbol: 'Rs. ',
+    decimalDigits: 0,
+  );
+  final dateFormat = DateFormat('MMM dd, yyyy h:mm a');
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    // Fetch initial data (today by default)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final now = DateTime.now();
+      final startOfDay = DateTime(now.year, now.month, now.day);
+      final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
+      context.read<BillingHistoryCubit>().fetchHistory(
+        startDate: startOfDay,
+        endDate: endOfDay,
+        isRefresh: true,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      context.read<BillingHistoryCubit>().fetchHistory();
+    }
+  }
+
+  Future<void> _selectDateRange(BuildContext context) async {
+    final state = context.read<BillingHistoryCubit>().state;
+    DateTime? initialStart = DateTime.now();
+    DateTime? initialEnd = DateTime.now();
+
+    if (state is BillingHistoryLoaded) {
+      initialStart = state.startDate ?? initialStart;
+      initialEnd = state.endDate ?? initialEnd;
+    }
+
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now().add(const Duration(days: 1)),
+      initialDateRange: DateTimeRange(start: initialStart, end: initialEnd),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(
+            context,
+          ).copyWith(colorScheme: Theme.of(context).colorScheme),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null && context.mounted) {
+      // Set time to cover the entire selected days
+      final startDate = DateTime(
+        picked.start.year,
+        picked.start.month,
+        picked.start.day,
+      );
+      final endDate = DateTime(
+        picked.end.year,
+        picked.end.month,
+        picked.end.day,
+        23,
+        59,
+        59,
+        999,
+      );
+
+      context.read<BillingHistoryCubit>().fetchHistory(
+        startDate: startDate,
+        endDate: endDate,
+        isRefresh: true,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Billing History'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.date_range),
+            onPressed: () => _selectDateRange(context),
+            tooltip: 'Filter by Date',
+          ),
+        ],
+      ),
+      body: BlocBuilder<BillingHistoryCubit, BillingHistoryState>(
+        builder: (context, state) {
+          if (state is BillingHistoryLoading &&
+              state is! BillingHistoryLoaded) {
+            return ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: 10,
+              itemBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: LoadingShimmer.card(),
+              ),
+            );
+          } else if (state is BillingHistoryError) {
+            return EmptyState(
+              icon: Icons.error_outline,
+              title: 'Failed to load history',
+              subtitle: state.message,
+              action: ElevatedButton(
+                onPressed: () {
+                  context.read<BillingHistoryCubit>().fetchHistory(
+                    isRefresh: true,
+                  );
+                },
+                child: const Text('Try Again'),
+              ),
+            );
+          } else if (state is BillingHistoryLoaded) {
+            return Column(
+              children: [
+                _buildDateFilterHeader(context, state),
+                Expanded(
+                  child: state.items.isEmpty
+                      ? const EmptyState(
+                          icon: Icons.history,
+                          title: 'No Billing History',
+                          subtitle:
+                              'No records found for the selected date range.',
+                        )
+                      : RefreshIndicator(
+                          onRefresh: () async {
+                            context.read<BillingHistoryCubit>().fetchHistory(
+                              isRefresh: true,
+                            );
+                          },
+                          child: ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.all(16),
+                            itemCount:
+                                state.items.length +
+                                (state.hasReachedMax ? 0 : 1),
+                            itemBuilder: (context, index) {
+                              if (index >= state.items.length) {
+                                return const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(16.0),
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                );
+                              }
+
+                              final item = state.items[index];
+                              return Card(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: BorderSide(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.outlineVariant,
+                                  ),
+                                ),
+                                child: ExpansionTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.primaryContainer,
+                                    child: Icon(
+                                      Icons.receipt_long,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onPrimaryContainer,
+                                    ),
+                                  ),
+                                  title: Text(
+                                    'Table ${item.tableNumber ?? 'N/A'} - ${currencyFormat.format(item.totalAmount)}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    dateFormat.format(item.createdAt.toLocal()),
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          _buildDetailRow(
+                                            'Order ID',
+                                            item.orderId,
+                                          ),
+                                          _buildDetailRow(
+                                            'Method',
+                                            item.method.toUpperCase(),
+                                          ),
+                                          const Divider(),
+                                          _buildDetailRow(
+                                            'Subtotal',
+                                            currencyFormat.format(
+                                              item.subtotal,
+                                            ),
+                                          ),
+                                          _buildDetailRow(
+                                            'Total Paid',
+                                            currencyFormat.format(
+                                              item.totalAmount,
+                                            ),
+                                            isBold: true,
+                                          ),
+                                          if (item.notes != null &&
+                                              item.notes!.isNotEmpty) ...[
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              'Notes:',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.grey[700],
+                                              ),
+                                            ),
+                                            Text(item.notes!),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                ),
+              ],
+            );
+          }
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+  }
+
+  Widget _buildDateFilterHeader(
+    BuildContext context,
+    BillingHistoryLoaded state,
+  ) {
+    if (state.startDate == null || state.endDate == null)
+      return const SizedBox.shrink();
+
+    final dateDisplay =
+        state.startDate!.day == state.endDate!.day &&
+            state.startDate!.month == state.endDate!.month &&
+            state.startDate!.year == state.endDate!.year
+        ? DateFormat('MMMM d, yyyy').format(state.startDate!)
+        : '${DateFormat('MMM d').format(state.startDate!)} - ${DateFormat('MMM d, yyyy').format(state.endDate!)}';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.calendar_today, size: 16),
+              const SizedBox(width: 8),
+              Text(
+                dateDisplay,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+          Text(
+            '${state.total} records',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, {bool isBold = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.grey)),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

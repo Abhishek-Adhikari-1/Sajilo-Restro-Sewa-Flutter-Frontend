@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
@@ -12,21 +13,126 @@ import 'features/dashboards/presentation/shells/admin_shell.dart';
 import 'features/dashboards/presentation/shells/cashier_shell.dart';
 import 'features/dashboards/presentation/shells/kitchen_shell.dart';
 import 'features/dashboards/presentation/shells/waiter_shell.dart';
+import 'features/tables/presentation/cubit/table_cubit.dart';
+import 'features/tables/domain/repositories/table_repository.dart';
+import 'features/tables/data/datasources/table_remote_datasource.dart';
+import 'core/network/socket_client.dart';
+import 'core/network/api_client.dart';
+import 'package:dio/dio.dart';
+import 'features/menu/presentation/cubit/menu_cubit.dart';
+import 'features/menu/domain/repositories/menu_repository.dart';
+import 'features/menu/data/datasources/menu_remote_datasource.dart';
+import 'features/orders/presentation/cubit/order_cubit.dart';
+import 'features/orders/domain/repositories/order_repository.dart';
+import 'features/orders/data/datasources/order_remote_datasource.dart';
+import 'features/dashboards/presentation/cubit/dashboard_cubit.dart';
+import 'features/dashboards/domain/repositories/dashboard_repository.dart';
+import 'features/dashboards/data/datasources/dashboard_remote_datasource.dart';
+import 'features/payments/presentation/cubit/payment_cubit.dart';
+import 'features/payments/presentation/cubit/billing_history_cubit.dart';
+import 'features/payments/presentation/cubit/side_panel_cubit.dart';
+import 'features/payments/data/repositories/payment_repository.dart';
+import 'features/payments/data/datasources/payment_remote_datasource.dart';
+import 'core/constants/app_constants.dart';
+import 'core/storage/secure_storage.dart';
+
+class MyCustomScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.trackpad,
+  };
+}
 
 class App extends StatelessWidget {
   const App({super.key});
 
+  Dio _buildDio() {
+    final dio = Dio(BaseOptions(
+      baseUrl: AppConstants.apiBaseUrl,
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+    ));
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final token = await SecureStorage.getToken(AppConstants.tokenKey);
+        if (token != null) {
+          options.headers['Authorization'] = 'Bearer $token';
+        }
+        return handler.next(options);
+      },
+    ));
+    return dio;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final configuredDio = _buildDio();
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => ThemeCubit()),
         BlocProvider(create: (_) => AuthCubit()),
+        // Add new Cubits here. Ideally, DI using get_it would be better, but we will instantiate directly for now.
+        BlocProvider(
+          create: (_) => TableCubit(
+            repository: TableRepository(
+              remoteDataSource: TableRemoteDataSourceImpl(ApiClient()),
+            ),
+            socketClient: SocketClient(),
+          ),
+        ),
+        BlocProvider(
+          create: (_) => MenuCubit(
+            MenuRepository(
+              MenuRemoteDataSource(configuredDio),
+            ),
+            SocketClient(),
+          ),
+        ),
+        BlocProvider(
+          create: (_) => OrderCubit(
+            OrderRepository(
+              OrderRemoteDataSource(configuredDio),
+            ),
+            SocketClient(),
+          ),
+        ),
+        BlocProvider(
+          create: (_) => DashboardCubit(
+            DashboardRepository(
+              DashboardRemoteDataSource(configuredDio),
+            ),
+            SocketClient(),
+          ),
+        ),
+        BlocProvider(
+          create: (_) => PaymentCubit(
+            PaymentRepository(
+              PaymentRemoteDataSource(configuredDio),
+            ),
+          ),
+        ),
+        BlocProvider(
+          create: (_) => SidePanelCubit(
+            PaymentRepository(
+              PaymentRemoteDataSource(configuredDio),
+            ),
+          ),
+        ),
+        BlocProvider(
+          create: (_) => BillingHistoryCubit(
+            PaymentRepository(
+              PaymentRemoteDataSource(configuredDio),
+            ),
+          ),
+        ),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
           return MaterialApp(
             title: 'Sajilo Restro Sewa',
+            scrollBehavior: MyCustomScrollBehavior(),
             themeMode: themeMode,
             theme: AppTheme.lightTheme(),
             darkTheme: AppTheme.darkTheme(),
@@ -45,8 +151,7 @@ class AuthGate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AuthCubit, AuthState>(
-      listenWhen: (_, current) =>
-          current is Unauthenticated && current.errorMessage != null,
+      listenWhen: (_, current) => true,
       listener: (context, state) {
         if (state is Unauthenticated && state.errorMessage != null) {
           ScaffoldMessenger.of(context)
@@ -58,6 +163,19 @@ class AuthGate extends StatelessWidget {
                 behavior: SnackBarBehavior.floating,
               ),
             );
+        }
+        if (state is Authenticated) {
+          // Connect socket and fetch tables proactively
+          final socketClient = SocketClient();
+          socketClient.connect().then((_) {
+            // Once connected (or if already connected), initialize listeners
+            if (context.mounted) {
+              context.read<TableCubit>().initSocket();
+              context.read<OrderCubit>().initSocket();
+              context.read<MenuCubit>().initSocket();
+            }
+          });
+          context.read<TableCubit>().fetchTables();
         }
       },
       builder: (context, state) {

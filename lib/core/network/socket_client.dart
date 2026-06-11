@@ -1,10 +1,10 @@
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../constants/app_constants.dart';
 import '../storage/secure_storage.dart';
 
 class SocketClient {
   static final SocketClient _instance = SocketClient._internal();
-  IO.Socket? _socket;
+  io.Socket? _socket;
 
   factory SocketClient() {
     return _instance;
@@ -12,14 +12,14 @@ class SocketClient {
 
   SocketClient._internal();
 
-  IO.Socket? get socket => _socket;
+  io.Socket? get socket => _socket;
 
   Future<void> connect() async {
     if (_socket != null && _socket!.connected) return;
 
     final token = await SecureStorage.getToken(AppConstants.tokenKey);
     
-    _socket = IO.io(AppConstants.socketUrl, IO.OptionBuilder()
+    _socket = io.io(AppConstants.socketUrl, io.OptionBuilder()
         .setTransports(['websocket'])
         .setPath('/realtime/')
         .setAuth({'token': token})
