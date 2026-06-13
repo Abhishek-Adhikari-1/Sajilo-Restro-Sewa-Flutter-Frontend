@@ -7,9 +7,9 @@ class DashboardRemoteDataSource {
 
   DashboardRemoteDataSource(this.dio);
 
-  Future<Map<String, dynamic>> fetchAdminDashboard() async {
+  Future<Map<String, dynamic>> fetchAdminDashboard({String period = 'today'}) async {
     try {
-      final response = await dio.get(ApiEndpoints.dashboardAdmin);
+      final response = await dio.get('${ApiEndpoints.dashboardAdmin}?period=$period');
       final data = response.data is Map<String, dynamic> && response.data.containsKey('data') 
           ? response.data['data'] 
           : response.data;

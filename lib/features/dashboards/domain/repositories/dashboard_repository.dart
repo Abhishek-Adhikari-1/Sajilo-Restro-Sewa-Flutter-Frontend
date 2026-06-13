@@ -7,9 +7,9 @@ class DashboardRepository {
 
   DashboardRepository(this._remoteDataSource);
 
-  Future<Map<String, dynamic>> getAdminDashboard() async {
+  Future<Map<String, dynamic>> getAdminDashboard({String period = 'today'}) async {
     try {
-      return await _remoteDataSource.fetchAdminDashboard();
+      return await _remoteDataSource.fetchAdminDashboard(period: period);
     } on ApiException catch (e) {
       throw ServerFailure(e.message, code: e.code, errors: e.errors);
     } catch (e) {

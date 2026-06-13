@@ -1,6 +1,7 @@
 import '../../../../core/network/api_client.dart';
 import '../models/user_model.dart';
 import '../models/session_model.dart';
+import '../models/active_session_model.dart';
 
 class AuthRemoteDataSource {
   final ApiClient _apiClient;
@@ -38,5 +39,11 @@ class AuthRemoteDataSource {
 
   Future<void> logoutAll() async {
     await _apiClient.post('/auth/logout-all');
+  }
+
+  Future<List<ActiveSessionModel>> getSessions() async {
+    final response = await _apiClient.get('/auth/sessions');
+    final List<dynamic> sessions = response['sessions'] ?? [];
+    return sessions.map((s) => ActiveSessionModel.fromJson(s)).toList();
   }
 }

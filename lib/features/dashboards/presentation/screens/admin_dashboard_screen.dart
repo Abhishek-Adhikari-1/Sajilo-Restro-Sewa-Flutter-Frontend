@@ -59,6 +59,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     context.read<DashboardCubit>().fetchDashboard('admin');
   }
 
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good Morning!';
+    if (hour < 17) return 'Good Afternoon!';
+    return 'Good Evening!';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,7 +73,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Dashboard'),
+            Text(_getGreeting(), style: const TextStyle(fontWeight: FontWeight.bold)),
             Text(
               'Welcome back, ${widget.user.firstName}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -75,6 +82,32 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ),
           ],
         ),
+        actions: [
+          BlocBuilder<DashboardCubit, DashboardState>(
+            builder: (context, state) {
+              String currentPeriod = 'today';
+              if (state is DashboardLoaded) {
+                currentPeriod = state.data['period'] ?? 'today';
+              }
+              return DropdownButton<String>(
+                value: currentPeriod,
+                underline: const SizedBox(),
+                items: const [
+                  DropdownMenuItem(value: 'today', child: Text('Today')),
+                  DropdownMenuItem(value: 'weekly', child: Text('Weekly')),
+                  DropdownMenuItem(value: 'monthly', child: Text('Monthly')),
+                  DropdownMenuItem(value: 'yearly', child: Text('Yearly')),
+                ],
+                onChanged: (val) {
+                  if (val != null && val != currentPeriod) {
+                    context.read<DashboardCubit>().fetchDashboard('admin', period: val);
+                  }
+                },
+              );
+            },
+          ),
+          const SizedBox(width: 16),
+        ],
       ),
       body: BlocBuilder<DashboardCubit, DashboardState>(
         builder: (context, state) {
@@ -110,9 +143,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildDashboard(BuildContext context, Map<String, dynamic> data) {
     final currencyFormat = NumberFormat.currency(symbol: 'Rs. ', decimalDigits: 0);
+    final period = data['period'] ?? 'today';
 
     return RefreshIndicator(
-      onRefresh: () => context.read<DashboardCubit>().fetchDashboard('admin'),
+      onRefresh: () => context.read<DashboardCubit>().fetchDashboard('admin', period: period),
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -127,9 +161,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               StatCard(
                 icon: Icons.payments,
                 iconColor: Colors.green,
-                label: "Today's Revenue",
-                value: currencyFormat.format(data['totalRevenueToday'] ?? 0),
-                trend: '+12%',
+                label: "Revenue",
+                value: currencyFormat.format(data['totalRevenue'] ?? 0),
               ),
               StatCard(
                 icon: Icons.receipt_long,
@@ -154,45 +187,123 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           const SizedBox(height: 24),
           const SectionHeader(title: "Revenue Overview"),
           SizedBox(
-            height: 200,
+            height: 250,
             child: Card(
               clipBehavior: Clip.antiAlias,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: LineChart(
-                  LineChartData(
-                    gridData: const FlGridData(show: false),
-                    titlesData: const FlTitlesData(
-                      leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    ),
-                    borderData: FlBorderData(show: false),
-                    lineBarsData: [
-                      LineChartBarData(
-                        spots: const [
-                          FlSpot(0, 3000),
-                          FlSpot(1, 4500),
-                          FlSpot(2, 3200),
-                          FlSpot(3, 8000),
-                          FlSpot(4, 5500),
-                          FlSpot(5, 7500),
-                          FlSpot(6, 12000),
-                        ],
-                        isCurved: true,
-                        color: Theme.of(context).colorScheme.primary,
-                        barWidth: 3,
-                        isStrokeCapRound: true,
-                        dotData: const FlDotData(show: false),
-                        belowBarData: BarAreaData(
-                          show: true,
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                child: Builder(
+                  builder: (context) {
+                    final revenueTrend = data['revenueTrend'] as List<dynamic>? ?? [];
+                    if (revenueTrend.isEmpty) {
+                      return const Center(child: Text("No revenue data for this period."));
+                    }
+
+                    List<BarChartGroupData> barGroups = [];
+                    double maxY = 0;
+
+                    for (int i = 0; i < revenueTrend.length; i++) {
+                      final item = revenueTrend[i];
+                      final val = (item['value'] ?? 0).toDouble();
+                      if (val > maxY) maxY = val;
+                      
+                      barGroups.add(
+                        BarChartGroupData(
+                          x: i,
+                          barRods: [
+                            BarChartRodData(
+                              toY: val,
+                              color: Theme.of(context).colorScheme.primary,
+                              width: 16,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return BarChart(
+                      BarChartData(
+                        maxY: maxY * 1.2,
+                        barGroups: barGroups,
+                        borderData: FlBorderData(show: false),
+                        gridData: const FlGridData(show: false),
+                        titlesData: FlTitlesData(
+                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              getTitlesWidget: (value, meta) {
+                                if (value.toInt() >= 0 && value.toInt() < revenueTrend.length) {
+                                  final labelRaw = revenueTrend[value.toInt()]['label']?.toString() ?? '';
+                                  // Simplistic label formatting based on period
+                                  String label = labelRaw;
+                                  if (labelRaw.length > 10) {
+                                    if (period == 'today') {
+                                      label = labelRaw.substring(11, 16); // HH:MM
+                                    } else {
+                                      label = labelRaw.substring(5, 10); // MM-DD
+                                    }
+                                  }
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 8.0),
+                                    child: Text(label, style: const TextStyle(fontSize: 10)),
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            ),
+                          ),
                         ),
                       ),
-                    ],
-                  ),
+                    );
+                  }
                 ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          const SectionHeader(title: "Order Status Distribution"),
+          SizedBox(
+            height: 250,
+            child: Card(
+              clipBehavior: Clip.antiAlias,
+              child: Builder(
+                builder: (context) {
+                  final statusDist = data['orderStatusDistribution'] as List<dynamic>? ?? [];
+                  if (statusDist.isEmpty) {
+                    return const Center(child: Text("No orders found for this period."));
+                  }
+
+                  List<PieChartSectionData> pieSections = [];
+                  final List<Color> colors = [Colors.blue, Colors.orange, Colors.green, Colors.red, Colors.purple, Colors.teal, Colors.brown];
+                  
+                  for (int i = 0; i < statusDist.length; i++) {
+                    final item = statusDist[i];
+                    final val = (item['count'] ?? 0).toDouble();
+                    final status = item['status']?.toString().toUpperCase() ?? 'UNKNOWN';
+                    
+                    pieSections.add(
+                      PieChartSectionData(
+                        color: colors[i % colors.length],
+                        value: val,
+                        title: '$status\n(${val.toInt()})',
+                        radius: 80,
+                        titleStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    );
+                  }
+
+                  return PieChart(
+                    PieChartData(
+                      sections: pieSections,
+                      centerSpaceRadius: 40,
+                      sectionsSpace: 2,
+                    ),
+                  );
+                }
               ),
             ),
           ),

@@ -121,7 +121,7 @@ class _ActiveOrdersScreenState extends State<ActiveOrdersScreen> {
         },
       ),
       floatingActionButton:
-          widget.table != null && widget.table!.capacity > widget.table!.occupiedSeats
+          widget.table != null && widget.table!.capacity > widget.table!.occupiedSeats && widget.table!.status != 'reserved'
           ? FloatingActionButton.extended(
               onPressed: () {
                 Navigator.push(

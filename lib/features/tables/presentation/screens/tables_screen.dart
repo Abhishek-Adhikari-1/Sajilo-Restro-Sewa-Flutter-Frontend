@@ -134,7 +134,7 @@ class _TablesScreenState extends State<TablesScreen> {
       appBar: AppBar(
         scrolledUnderElevation: 0.0,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        title: const Text('Table'),
+        title: const Text('Tables'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,7 +254,7 @@ class _TablesScreenState extends State<TablesScreen> {
                                             ActiveOrdersScreen(table: table),
                                       ),
                                     );
-                                  } else if (table.capacity > table.occupiedSeats || table.status == 'available') {
+                                  } else if (table.status != 'reserved' && (table.capacity > table.occupiedSeats || table.status == 'available')) {
                                     await Navigator.push(
                                       context,
                                       MaterialPageRoute(

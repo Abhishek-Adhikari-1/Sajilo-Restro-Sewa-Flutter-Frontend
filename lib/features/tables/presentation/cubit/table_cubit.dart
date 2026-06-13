@@ -194,4 +194,15 @@ class TableCubit extends Cubit<TableState> {
       emit(currentState.copyWith(tables: updatedTables));
     }
   }
+
+  Future<void> updateSingleTableStatus(String id, String newStatus) async {
+    try {
+      await repository.updateTableStatus(id, newStatus);
+      updateTableDetailsOptimistic(id, {'status': newStatus});
+    } catch (e) {
+      if (state is TableLoaded) {
+        emit((state as TableLoaded).copyWith(errorMessage: 'Failed to update table status: $e'));
+      }
+    }
+  }
 }

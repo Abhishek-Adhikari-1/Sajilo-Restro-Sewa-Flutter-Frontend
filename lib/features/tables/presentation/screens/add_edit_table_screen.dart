@@ -22,15 +22,23 @@ class _AddEditTableScreenState extends State<AddEditTableScreen> {
   String _status = 'available';
   bool _isLoading = false;
 
-  final List<String> _statuses = ['available', 'occupied', 'reserved', 'cleaning', 'unavailable'];
+  final List<String> _statuses = [
+    'available',
+    'occupied',
+    'reserved',
+    'cleaning',
+    'unavailable',
+  ];
 
   @override
   void initState() {
     super.initState();
     if (widget.initialData != null) {
-      _tableNumberController.text = widget.initialData!['tableNumber']?.toString() ?? '';
+      _tableNumberController.text =
+          widget.initialData!['tableNumber']?.toString() ?? '';
       _sectionController.text = widget.initialData!['section'] ?? '';
-      _capacityController.text = widget.initialData!['capacity']?.toString() ?? '';
+      _capacityController.text =
+          widget.initialData!['capacity']?.toString() ?? '';
       _status = widget.initialData!['status'] ?? 'available';
     }
   }
@@ -68,7 +76,11 @@ class _AddEditTableScreenState extends State<AddEditTableScreen> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(widget.id != null ? 'Table updated successfully' : 'Table created successfully'),
+            content: Text(
+              widget.id != null
+                  ? 'Table updated successfully'
+                  : 'Table created successfully',
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -102,47 +114,52 @@ class _AddEditTableScreenState extends State<AddEditTableScreen> {
                       controller: _tableNumberController,
                       decoration: const InputDecoration(
                         labelText: 'Table Number',
-                        border: const OutlineInputBorder(),
+                        border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.numbers),
                       ),
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                      validator: (value) =>
+                          value == null || value.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _sectionController,
                       decoration: const InputDecoration(
                         labelText: 'Section (e.g., Indoor, Outdoor)',
-                        border: const OutlineInputBorder(),
+                        border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.place),
                       ),
-                      validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                      validator: (value) =>
+                          value == null || value.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _capacityController,
                       decoration: const InputDecoration(
                         labelText: 'Capacity (Number of seats)',
-                        border: const OutlineInputBorder(),
+                        border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.chair),
                       ),
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                      validator: (value) =>
+                          value == null || value.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      value: _status,
+                      initialValue: _status,
                       decoration: const InputDecoration(
                         labelText: 'Status',
-                        border: const OutlineInputBorder(),
+                        border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.info_outline),
                       ),
                       items: _statuses.map((status) {
                         return DropdownMenuItem(
                           value: status,
-                          child: Text(status[0].toUpperCase() + status.substring(1)),
+                          child: Text(
+                            status[0].toUpperCase() + status.substring(1),
+                          ),
                         );
                       }).toList(),
                       onChanged: (value) {

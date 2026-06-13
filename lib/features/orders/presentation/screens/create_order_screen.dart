@@ -15,6 +15,7 @@ import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../../shared/widgets/custom_filter_chip.dart';
 import '../../../tables/presentation/cubit/table_cubit.dart';
+import '../../../tables/presentation/cubit/table_state.dart';
 
 class CreateOrderScreen extends StatefulWidget {
   final TableModel table;
@@ -40,6 +41,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   final ScrollController _menusScrollController = ScrollController();
   final ScrollController _categoriesScrollController = ScrollController();
   Timer? _debounce;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -417,6 +419,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     }
 
     if (widget.existingOrder != null) {
+      setState(() => _isSubmitting = true);
       context.read<OrderCubit>().updateOrderItems(
         widget.existingOrder!.id,
         _cartNotifier.value,
@@ -510,6 +513,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       'occupied_seats': newOccupiedSeats,
     });
 
+    setState(() => _isSubmitting = true);
     context.read<OrderCubit>().createOrder(newOrder);
   }
 
@@ -518,26 +522,66 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     final theme = Theme.of(context);
     final isMobile = MediaQuery.of(context).size.width < 600;
     final isEditing = widget.existingOrder != null;
-    final availableSeats = widget.table.capacity - widget.table.occupiedSeats;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          isEditing
-              ? 'Edit Order Items'
-              : 'New Order - Table ${widget.table.tableNumber} ($availableSeats Seats Available)',
+        title: BlocBuilder<TableCubit, TableState>(
+          builder: (context, state) {
+            TableModel currentTable = widget.table;
+            if (state is TableLoaded) {
+              try {
+                currentTable = state.tables.firstWhere((t) => t.id == widget.table.id);
+              } catch (_) {}
+            }
+            final availableSeats = currentTable.capacity - currentTable.occupiedSeats;
+            return Text(
+              isEditing
+                  ? 'Edit Order Items'
+                  : 'New Order - Table ${currentTable.tableNumber} ($availableSeats Seats Available)',
+            );
+          },
         ),
+        actions: [
+          if (isEditing && widget.table.status != 'reserved')
+            TextButton.icon(
+              onPressed: () async {
+                final messenger = ScaffoldMessenger.of(context);
+                try {
+                  await context.read<TableCubit>().updateSingleTableStatus(widget.table.id, 'reserved');
+                  if (context.mounted) {
+                    messenger.showSnackBar(
+                      const SnackBar(content: Text('Table marked as reserved!')),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    messenger.showSnackBar(
+                      SnackBar(content: Text('Failed: $e')),
+                    );
+                  }
+                }
+              },
+              icon: const Icon(Icons.lock_outline, color: Colors.orange),
+              label: const Text('Mark Reserved', style: TextStyle(color: Colors.orange)),
+            ),
+          const SizedBox(width: 8),
+        ],
       ),
       bottomNavigationBar: isMobile ? _buildMobileBottomBar(theme) : null,
       body: BlocListener<OrderCubit, OrderState>(
         listener: (context, state) {
           if (state is OrderError) {
-            AppErrorHandler.showError(context, state.message);
+            if (_isSubmitting) {
+              AppErrorHandler.showError(context, state.message);
+              setState(() => _isSubmitting = false);
+            }
           } else if (state is OrderLoaded) {
-            AppErrorHandler.showSuccess(context, isEditing
-                      ? 'Items added successfully!'
-                      : 'Order submitted successfully!',);
-            Navigator.pop(context);
+            if (_isSubmitting) {
+              AppErrorHandler.showSuccess(context, isEditing
+                        ? 'Items added successfully!'
+                        : 'Order submitted successfully!',);
+              Navigator.pop(context);
+            }
           }
         },
         child: isMobile

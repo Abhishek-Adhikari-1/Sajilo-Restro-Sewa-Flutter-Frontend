@@ -33,15 +33,15 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
     super.dispose();
   }
 
-  void _navigateToAddEditScreen({String? id, Map<String, dynamic>? initialData}) {
+  void _navigateToAddEditScreen({
+    String? id,
+    Map<String, dynamic>? initialData,
+  }) {
     context.read<MenuCubit>().discardChanges();
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => AddEditCategoryScreen(
-          id: id,
-          initialData: initialData,
-        ),
+        builder: (_) => AddEditCategoryScreen(id: id, initialData: initialData),
       ),
     );
   }
@@ -75,21 +75,30 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
               return Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     child: LoadingShimmer(
                       child: Row(
                         children: [
                           Expanded(
                             child: Container(
                               height: 48,
-                              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(24),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Container(
                             width: isMobile ? 48 : 150,
                             height: 48,
-                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                         ],
                       ),
@@ -114,7 +123,8 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                 ),
               );
             } else if (state is MenuLoaded) {
-              if (state.categories.isEmpty && (_searchController.text.isEmpty)) {
+              if (state.categories.isEmpty &&
+                  (_searchController.text.isEmpty)) {
                 return EmptyState(
                   icon: Icons.category,
                   title: 'No Categories',
@@ -127,18 +137,25 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                 );
               }
 
-              final currentPage = (state.categoryOffset / state.categoryLimit).floor() + 1;
-              final totalPages = (state.categoryTotal / state.categoryLimit).ceil();
+              final currentPage =
+                  (state.categoryOffset / state.categoryLimit).floor() + 1;
+              final totalPages = (state.categoryTotal / state.categoryLimit)
+                  .ceil();
 
               final filteredCategories = state.categories.where((c) {
-                final matchesStatus = _isAvailableFilter == null || c.isActive == _isAvailableFilter;
+                final matchesStatus =
+                    _isAvailableFilter == null ||
+                    c.isActive == _isAvailableFilter;
                 return matchesStatus;
               }).toList();
 
               return Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     child: Row(
                       children: [
                         Expanded(
@@ -149,24 +166,40 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                               prefixIcon: const Icon(Icons.search),
                               suffixIcon: _searchController.text.isNotEmpty
                                   ? Padding(
-                                      padding: const EdgeInsets.only(right: 8.0),
+                                      padding: const EdgeInsets.only(
+                                        right: 8.0,
+                                      ),
                                       child: IconButton(
                                         icon: const Icon(Icons.clear),
                                         onPressed: () {
                                           _searchController.clear();
-                                          context.read<MenuCubit>().fetchCategoriesOnly(search: '');
+                                          context
+                                              .read<MenuCubit>()
+                                              .fetchCategoriesOnly(search: '');
                                         },
                                       ),
                                     )
                                   : null,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
                             ),
                             onChanged: (val) {
-                              if (_debounceTimer?.isActive ?? false) _debounceTimer?.cancel();
-                              _debounceTimer = Timer(const Duration(milliseconds: 500), () {
-                                context.read<MenuCubit>().fetchCategoriesOnly(search: val.trim());
-                              });
+                              if (_debounceTimer?.isActive ?? false) {
+                                _debounceTimer?.cancel();
+                              }
+                              _debounceTimer = Timer(
+                                const Duration(milliseconds: 500),
+                                () {
+                                  context.read<MenuCubit>().fetchCategoriesOnly(
+                                    search: val.trim(),
+                                  );
+                                },
+                              );
                             },
                           ),
                         ),
@@ -214,7 +247,7 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                                       vertical: 8,
                                     ),
                                   ),
-                                  value: _isAvailableFilter,
+                                  initialValue: _isAvailableFilter,
                                   hint: const Text('Status'),
                                   isExpanded: true,
                                   items: const [
@@ -250,50 +283,86 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                           ? ListView(
                               children: const [
                                 SizedBox(height: 100),
-                                Center(child: Text('No categories match your search.')),
+                                Center(
+                                  child: Text(
+                                    'No categories match your search.',
+                                  ),
+                                ),
                               ],
                             )
                           : ListView.builder(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
                               itemCount: filteredCategories.length,
                               itemBuilder: (context, index) {
                                 final category = filteredCategories[index];
-                                final isEdited = state.editedCategories.containsKey(category.id);
+                                final isEdited = state.editedCategories
+                                    .containsKey(category.id);
 
                                 return Card(
                                   margin: const EdgeInsets.only(bottom: 8),
                                   clipBehavior: Clip.antiAlias,
                                   shape: isEdited
                                       ? RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
                                           side: BorderSide(
-                                            color: Theme.of(context).colorScheme.secondary,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.secondary,
                                             width: 2,
                                           ),
                                         )
                                       : null,
                                   child: ListTile(
                                     leading: CircleAvatar(
-                                      backgroundColor: Colors.blue.withValues(alpha: 0.1),
-                                      backgroundImage: category.icon != null && category.icon!.isNotEmpty
+                                      backgroundColor: Colors.blue.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      backgroundImage:
+                                          category.icon != null &&
+                                              category.icon!.isNotEmpty
                                           ? NetworkImage(category.icon!)
                                           : null,
-                                      child: category.icon == null || category.icon!.isEmpty
-                                          ? const Icon(Icons.restaurant, size: 20)
+                                      child:
+                                          category.icon == null ||
+                                              category.icon!.isEmpty
+                                          ? const Icon(
+                                              Icons.restaurant,
+                                              size: 20,
+                                            )
                                           : null,
                                     ),
-                                    title: Text(category.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                    title: Text(
+                                      category.name,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                     trailing: AnimatedAvailabilityToggle(
-                                      isAvailable: state.editedCategories.containsKey(category.id)
+                                      isAvailable:
+                                          state.editedCategories.containsKey(
+                                            category.id,
+                                          )
                                           ? state.editedCategories[category.id]!
                                           : category.isActive,
                                       onTap: () {
-                                        context.read<MenuCubit>().toggleCategoryAvailability(category.id);
+                                        context
+                                            .read<MenuCubit>()
+                                            .toggleCategoryAvailability(
+                                              category.id,
+                                            );
                                       },
                                     ),
                                     onTap: () {
                                       if (state.editedCategories.isNotEmpty) {
-                                        context.read<MenuCubit>().toggleCategoryAvailability(category.id);
+                                        context
+                                            .read<MenuCubit>()
+                                            .toggleCategoryAvailability(
+                                              category.id,
+                                            );
                                       } else {
                                         _navigateToAddEditScreen(
                                           id: category.id,
@@ -316,17 +385,28 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                     Container(
                       padding: EdgeInsets.symmetric(
                         horizontal: 16,
-                        vertical: MediaQuery.of(context).size.width < 600 ? 8 : 16,
+                        vertical: MediaQuery.of(context).size.width < 600
+                            ? 8
+                            : 16,
                       ),
                       color: Theme.of(context).colorScheme.primaryContainer,
                       child: Row(
                         children: [
-                          Icon(Icons.info_outline, color: Theme.of(context).colorScheme.onPrimaryContainer),
+                          Icon(
+                            Icons.info_outline,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onPrimaryContainer,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'You have ${state.editedCategories.length} unsaved change${state.editedCategories.length == 1 ? '' : 's'}.',
-                              style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),
+                              style: TextStyle(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onPrimaryContainer,
+                              ),
                             ),
                           ),
                           if (state.isSaving)
@@ -337,23 +417,45 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                             )
                           else ...[
                             FilledButton.tonal(
-                              onPressed: () => context.read<MenuCubit>().discardChanges(),
+                              onPressed: () =>
+                                  context.read<MenuCubit>().discardChanges(),
                               style: FilledButton.styleFrom(
-                                backgroundColor: Theme.of(context).colorScheme.surface,
-                                foregroundColor: Theme.of(context).colorScheme.onSurface,
-                                visualDensity: MediaQuery.of(context).size.width < 600 ? VisualDensity.compact : null,
-                                padding: MediaQuery.of(context).size.width < 600 ? const EdgeInsets.symmetric(horizontal: 12) : null,
-                                textStyle: MediaQuery.of(context).size.width < 600 ? const TextStyle(fontSize: 12) : null,
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.surface,
+                                foregroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface,
+                                visualDensity:
+                                    MediaQuery.of(context).size.width < 600
+                                    ? VisualDensity.compact
+                                    : null,
+                                padding: MediaQuery.of(context).size.width < 600
+                                    ? const EdgeInsets.symmetric(horizontal: 12)
+                                    : null,
+                                textStyle:
+                                    MediaQuery.of(context).size.width < 600
+                                    ? const TextStyle(fontSize: 12)
+                                    : null,
                               ),
                               child: const Text('Discard'),
                             ),
                             const SizedBox(width: 8),
                             FilledButton(
-                              onPressed: () => context.read<MenuCubit>().saveChanges(),
+                              onPressed: () =>
+                                  context.read<MenuCubit>().saveChanges(),
                               style: FilledButton.styleFrom(
-                                visualDensity: MediaQuery.of(context).size.width < 600 ? VisualDensity.compact : null,
-                                padding: MediaQuery.of(context).size.width < 600 ? const EdgeInsets.symmetric(horizontal: 12) : null,
-                                textStyle: MediaQuery.of(context).size.width < 600 ? const TextStyle(fontSize: 12) : null,
+                                visualDensity:
+                                    MediaQuery.of(context).size.width < 600
+                                    ? VisualDensity.compact
+                                    : null,
+                                padding: MediaQuery.of(context).size.width < 600
+                                    ? const EdgeInsets.symmetric(horizontal: 12)
+                                    : null,
+                                textStyle:
+                                    MediaQuery.of(context).size.width < 600
+                                    ? const TextStyle(fontSize: 12)
+                                    : null,
                               ),
                               child: const Text('Save'),
                             ),
@@ -364,7 +466,10 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                   SafeArea(
                     top: false,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Theme.of(context).cardColor,
                         border: Border(
@@ -393,7 +498,9 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                                 }).toList(),
                                 onChanged: (newLimit) {
                                   if (newLimit != null) {
-                                    context.read<MenuCubit>().fetchCategoriesOnly(
+                                    context
+                                        .read<MenuCubit>()
+                                        .fetchCategoriesOnly(
                                           search: state.categorySearch,
                                           offset: 0,
                                           limit: newLimit,
@@ -410,9 +517,13 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                                 icon: const Icon(Icons.chevron_left),
                                 onPressed: currentPage > 1
                                     ? () {
-                                        context.read<MenuCubit>().fetchCategoriesOnly(
+                                        context
+                                            .read<MenuCubit>()
+                                            .fetchCategoriesOnly(
                                               search: state.categorySearch,
-                                              offset: state.categoryOffset - state.categoryLimit,
+                                              offset:
+                                                  state.categoryOffset -
+                                                  state.categoryLimit,
                                               limit: state.categoryLimit,
                                             );
                                       }
@@ -426,9 +537,13 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                                 icon: const Icon(Icons.chevron_right),
                                 onPressed: currentPage < totalPages
                                     ? () {
-                                        context.read<MenuCubit>().fetchCategoriesOnly(
+                                        context
+                                            .read<MenuCubit>()
+                                            .fetchCategoriesOnly(
                                               search: state.categorySearch,
-                                              offset: state.categoryOffset + state.categoryLimit,
+                                              offset:
+                                                  state.categoryOffset +
+                                                  state.categoryLimit,
                                               limit: state.categoryLimit,
                                             );
                                       }

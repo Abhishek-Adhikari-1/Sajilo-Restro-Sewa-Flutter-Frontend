@@ -33,14 +33,14 @@ class _AdminTablesScreenState extends State<AdminTablesScreen> {
     super.dispose();
   }
 
-  void _navigateToAddEditScreen({String? id, Map<String, dynamic>? initialData}) {
+  void _navigateToAddEditScreen({
+    String? id,
+    Map<String, dynamic>? initialData,
+  }) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => AddEditTableScreen(
-          id: id,
-          initialData: initialData,
-        ),
+        builder: (_) => AddEditTableScreen(id: id, initialData: initialData),
       ),
     );
   }
@@ -78,21 +78,30 @@ class _AdminTablesScreenState extends State<AdminTablesScreen> {
               return Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     child: LoadingShimmer(
                       child: Row(
                         children: [
                           Expanded(
                             child: Container(
                               height: 48,
-                              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(24),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Container(
                             width: isMobile ? 48 : 150,
                             height: 48,
-                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                         ],
                       ),
@@ -127,14 +136,17 @@ class _AdminTablesScreenState extends State<AdminTablesScreen> {
               final currentLimit = state.limit;
               final currentOffset = state.offset;
               final total = state.total;
-              
+
               final currentPage = (currentOffset / currentLimit).floor() + 1;
               final totalPages = (total / currentLimit).ceil();
-              
+
               return Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     child: Row(
                       children: [
                         Expanded(
@@ -145,24 +157,48 @@ class _AdminTablesScreenState extends State<AdminTablesScreen> {
                               prefixIcon: const Icon(Icons.search),
                               suffixIcon: _searchController.text.isNotEmpty
                                   ? Padding(
-                                      padding: const EdgeInsets.only(right: 8.0),
+                                      padding: const EdgeInsets.only(
+                                        right: 8.0,
+                                      ),
                                       child: IconButton(
                                         icon: const Icon(Icons.clear),
                                         onPressed: () {
                                           _searchController.clear();
-                                          context.read<TableCubit>().fetchTables(search: '', status: _statusFilter == 'all' ? null : _statusFilter);
+                                          context
+                                              .read<TableCubit>()
+                                              .fetchTables(
+                                                search: '',
+                                                status: _statusFilter == 'all'
+                                                    ? null
+                                                    : _statusFilter,
+                                              );
                                         },
                                       ),
                                     )
                                   : null,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
                             ),
                             onChanged: (val) {
-                              if (_debounceTimer?.isActive ?? false) _debounceTimer?.cancel();
-                              _debounceTimer = Timer(const Duration(milliseconds: 500), () {
-                                context.read<TableCubit>().fetchTables(search: val.trim(), status: _statusFilter == 'all' ? null : _statusFilter);
-                              });
+                              if (_debounceTimer?.isActive ?? false) {
+                                _debounceTimer?.cancel();
+                              }
+                              _debounceTimer = Timer(
+                                const Duration(milliseconds: 500),
+                                () {
+                                  context.read<TableCubit>().fetchTables(
+                                    search: val.trim(),
+                                    status: _statusFilter == 'all'
+                                        ? null
+                                        : _statusFilter,
+                                  );
+                                },
+                              );
                             },
                           ),
                         ),
@@ -176,21 +212,46 @@ class _AdminTablesScreenState extends State<AdminTablesScreen> {
                                   setState(() {
                                     _statusFilter = val;
                                   });
-                                  context.read<TableCubit>().fetchTables(search: _searchController.text, status: val == 'all' ? null : val);
+                                  context.read<TableCubit>().fetchTables(
+                                    search: _searchController.text,
+                                    status: val == 'all' ? null : val,
+                                  );
                                 },
                                 itemBuilder: (context) => [
-                                  const PopupMenuItem(value: 'all', child: Text('All Status')),
-                                  const PopupMenuItem(value: 'available', child: Text('Available')),
-                                  const PopupMenuItem(value: 'occupied', child: Text('Occupied')),
-                                  const PopupMenuItem(value: 'reserved', child: Text('Reserved')),
-                                  const PopupMenuItem(value: 'cleaning', child: Text('Cleaning')),
-                                  const PopupMenuItem(value: 'unavailable', child: Text('Unavailable')),
+                                  const PopupMenuItem(
+                                    value: 'all',
+                                    child: Text('All Status'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'available',
+                                    child: Text('Available'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'occupied',
+                                    child: Text('Occupied'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'reserved',
+                                    child: Text('Reserved'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'cleaning',
+                                    child: Text('Cleaning'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'unavailable',
+                                    child: Text('Unavailable'),
+                                  ),
                                 ],
                                 child: Padding(
                                   padding: const EdgeInsets.all(4.0),
                                   child: Icon(
                                     Icons.filter_list,
-                                    color: (_statusFilter != null && _statusFilter != 'all') ? Theme.of(context).colorScheme.primary : null,
+                                    color:
+                                        (_statusFilter != null &&
+                                            _statusFilter != 'all')
+                                        ? Theme.of(context).colorScheme.primary
+                                        : null,
                                   ),
                                 ),
                               )
@@ -198,24 +259,48 @@ class _AdminTablesScreenState extends State<AdminTablesScreen> {
                                 width: 150,
                                 child: DropdownButtonFormField<String>(
                                   decoration: const InputDecoration(
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
+                                    ),
                                   ),
-                                  value: _statusFilter ?? 'all',
+                                  initialValue: _statusFilter ?? 'all',
                                   hint: const Text('Status'),
                                   isExpanded: true,
                                   items: const [
-                                    DropdownMenuItem(value: 'all', child: Text('All Status')),
-                                    DropdownMenuItem(value: 'available', child: Text('Available')),
-                                    DropdownMenuItem(value: 'occupied', child: Text('Occupied')),
-                                    DropdownMenuItem(value: 'reserved', child: Text('Reserved')),
-                                    DropdownMenuItem(value: 'cleaning', child: Text('Cleaning')),
-                                    DropdownMenuItem(value: 'unavailable', child: Text('Unavailable')),
+                                    DropdownMenuItem(
+                                      value: 'all',
+                                      child: Text('All Status'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'available',
+                                      child: Text('Available'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'occupied',
+                                      child: Text('Occupied'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'reserved',
+                                      child: Text('Reserved'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'cleaning',
+                                      child: Text('Cleaning'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'unavailable',
+                                      child: Text('Unavailable'),
+                                    ),
                                   ],
                                   onChanged: (val) {
                                     setState(() {
                                       _statusFilter = val;
                                     });
-                                    context.read<TableCubit>().fetchTables(search: _searchController.text, status: val == 'all' ? null : val);
+                                    context.read<TableCubit>().fetchTables(
+                                      search: _searchController.text,
+                                      status: val == 'all' ? null : val,
+                                    );
                                   },
                                 ),
                               ),
@@ -234,23 +319,33 @@ class _AdminTablesScreenState extends State<AdminTablesScreen> {
                                 setState(() {
                                   _statusFilter = 'all';
                                 });
-                                context.read<TableCubit>().fetchTables(search: '', status: null);
+                                context.read<TableCubit>().fetchTables(
+                                  search: '',
+                                  status: null,
+                                );
                               },
                               child: const Text('Clear Search & Filters'),
                             ),
                           )
                         : RefreshIndicator(
-                            onRefresh: () => context.read<TableCubit>().fetchTables(
-                              search: _searchController.text,
-                              status: _statusFilter == 'all' ? null : _statusFilter,
-                              limit: currentLimit,
-                            ),
+                            onRefresh: () =>
+                                context.read<TableCubit>().fetchTables(
+                                  search: _searchController.text,
+                                  status: _statusFilter == 'all'
+                                      ? null
+                                      : _statusFilter,
+                                  limit: currentLimit,
+                                ),
                             child: ListView.builder(
-                              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+                              padding: const EdgeInsets.only(
+                                left: 16,
+                                right: 16,
+                                bottom: 16,
+                              ),
                               itemCount: tables.length,
                               itemBuilder: (context, index) {
                                 final table = tables[index];
-                                
+
                                 return Card(
                                   elevation: 0,
                                   clipBehavior: Clip.antiAlias,
@@ -258,7 +353,10 @@ class _AdminTablesScreenState extends State<AdminTablesScreen> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                     side: BorderSide(
-                                      color: Theme.of(context).colorScheme.outlineVariant.withAlpha(128),
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .outlineVariant
+                                          .withAlpha(128),
                                       width: 1,
                                     ),
                                   ),
@@ -282,50 +380,72 @@ class _AdminTablesScreenState extends State<AdminTablesScreen> {
                                             width: 48,
                                             height: 48,
                                             decoration: BoxDecoration(
-                                              color: Theme.of(context).colorScheme.primaryContainer,
-                                              borderRadius: BorderRadius.circular(12),
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.primaryContainer,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                             ),
                                             child: Center(
                                               child: Icon(
                                                 Icons.table_restaurant,
-                                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onPrimaryContainer,
                                               ),
                                             ),
                                           ),
                                           const SizedBox(width: 16),
                                           Expanded(
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   'Table ${table.tableNumber}',
-                                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 16,
+                                                  ),
                                                   maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                 ),
                                                 const SizedBox(height: 4),
                                                 Text(
                                                   '${table.section} • Capacity: ${table.capacity}',
                                                   style: TextStyle(
-                                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurfaceVariant,
                                                     fontSize: 14,
                                                   ),
                                                   maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                 ),
                                               ],
                                             ),
                                           ),
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 4,
+                                            ),
                                             decoration: BoxDecoration(
-                                              color: _getStatusColor(table.status).withAlpha(51),
-                                              borderRadius: BorderRadius.circular(8),
+                                              color: _getStatusColor(
+                                                table.status,
+                                              ).withAlpha(51),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
                                             ),
                                             child: Text(
-                                              table.status[0].toUpperCase() + table.status.substring(1),
+                                              table.status[0].toUpperCase() +
+                                                  table.status.substring(1),
                                               style: TextStyle(
-                                                color: _getStatusColor(table.status),
+                                                color: _getStatusColor(
+                                                  table.status,
+                                                ),
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 12,
                                               ),
@@ -344,10 +464,19 @@ class _AdminTablesScreenState extends State<AdminTablesScreen> {
                     SafeArea(
                       top: false,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: Theme.of(context).scaffoldBackgroundColor,
-                          border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant.withAlpha(128))),
+                          border: Border(
+                            top: BorderSide(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.outlineVariant.withAlpha(128),
+                            ),
+                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -369,7 +498,9 @@ class _AdminTablesScreenState extends State<AdminTablesScreen> {
                                     if (newValue != null) {
                                       context.read<TableCubit>().fetchTables(
                                         search: _searchController.text,
-                                        status: _statusFilter == 'all' ? null : _statusFilter,
+                                        status: _statusFilter == 'all'
+                                            ? null
+                                            : _statusFilter,
                                         limit: newValue,
                                       );
                                     }
@@ -382,14 +513,26 @@ class _AdminTablesScreenState extends State<AdminTablesScreen> {
                                 IconButton(
                                   icon: const Icon(Icons.chevron_left),
                                   onPressed: currentPage > 1
-                                      ? () => context.read<TableCubit>().changePage(currentPage - 1, currentLimit)
+                                      ? () => context
+                                            .read<TableCubit>()
+                                            .changePage(
+                                              currentPage - 1,
+                                              currentLimit,
+                                            )
                                       : null,
                                 ),
-                                Text('Page $currentPage of ${totalPages == 0 ? 1 : totalPages}'),
+                                Text(
+                                  'Page $currentPage of ${totalPages == 0 ? 1 : totalPages}',
+                                ),
                                 IconButton(
                                   icon: const Icon(Icons.chevron_right),
                                   onPressed: currentPage < totalPages
-                                      ? () => context.read<TableCubit>().changePage(currentPage + 1, currentLimit)
+                                      ? () => context
+                                            .read<TableCubit>()
+                                            .changePage(
+                                              currentPage + 1,
+                                              currentLimit,
+                                            )
                                       : null,
                                 ),
                               ],
@@ -408,7 +551,7 @@ class _AdminTablesScreenState extends State<AdminTablesScreen> {
       ),
     );
   }
-  
+
   Color _getStatusColor(String status) {
     switch (status) {
       case 'available':

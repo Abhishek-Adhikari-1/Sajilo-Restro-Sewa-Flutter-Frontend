@@ -1,7 +1,7 @@
 import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/session_model.dart';
-
+import '../../data/models/active_session_model.dart';
 class AuthRepository {
   final AuthRemoteDataSource _remoteDataSource;
 
@@ -26,5 +26,9 @@ class AuthRepository {
 
   Future<void> logoutAll() {
     return _remoteDataSource.logoutAll();
+  }
+
+  Future<List<ActiveSessionModel>> getSessions() {
+    return _remoteDataSource.getSessions();
   }
 }

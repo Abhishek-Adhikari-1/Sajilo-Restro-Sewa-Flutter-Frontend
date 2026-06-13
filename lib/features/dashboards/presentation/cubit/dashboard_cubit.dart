@@ -8,6 +8,7 @@ class DashboardCubit extends Cubit<DashboardState> {
   final DashboardRepository _repository;
   final SocketClient _socketClient;
   String? _currentRole;
+  String _currentPeriod = 'today';
 
   DashboardCubit(this._repository, this._socketClient) : super(DashboardInitial()) {
     _socketClient.socket?.on('order_created', (_) => _refreshDashboard());
@@ -20,12 +21,16 @@ class DashboardCubit extends Cubit<DashboardState> {
 
   void _refreshDashboard() {
     if (_currentRole != null) {
-      fetchDashboard(_currentRole!);
+      fetchDashboard(_currentRole!, period: _currentPeriod);
     }
   }
 
-  Future<void> fetchDashboard(String role) async {
+  Future<void> fetchDashboard(String role, {String? period}) async {
     _currentRole = role;
+    if (period != null) {
+      _currentPeriod = period;
+    }
+    
     if (state is! DashboardLoaded) {
       emit(DashboardLoading());
     }
@@ -33,7 +38,7 @@ class DashboardCubit extends Cubit<DashboardState> {
       Map<String, dynamic> data;
       switch (role.toLowerCase()) {
         case 'admin':
-          data = await _repository.getAdminDashboard();
+          data = await _repository.getAdminDashboard(period: _currentPeriod);
           break;
         case 'waiter':
           data = await _repository.getWaiterDashboard();
