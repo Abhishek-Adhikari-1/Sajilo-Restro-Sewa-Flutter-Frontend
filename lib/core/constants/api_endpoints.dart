@@ -11,4 +11,6 @@ class ApiEndpoints {
   static const String menus = "/menus";
   static const String orders = "/orders";
   static const String activeOrders = "/orders/active";
+  static const String users = "/users";
+  static const String imageUpload = "/images/upload";
 }

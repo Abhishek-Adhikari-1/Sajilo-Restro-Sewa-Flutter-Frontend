@@ -1,3 +1,4 @@
+import 'package:sajilo_restro_sewa/core/errors/app_error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -160,9 +161,7 @@ class _WaiterDashboardScreenState extends State<WaiterDashboardScreen> {
                         ),
                       );
                     } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Could not load order details: $e')),
-                      );
+                      AppErrorHandler.showError(context, 'Could not load order details: $e');
                     }
                   },
                 ),

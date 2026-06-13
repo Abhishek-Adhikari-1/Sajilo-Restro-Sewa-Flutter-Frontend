@@ -1,3 +1,4 @@
+import 'package:sajilo_restro_sewa/core/errors/app_error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -61,90 +62,167 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
       initialDateRange: DateTimeRange(start: initialStart, end: initialEnd),
       initialEntryMode: DatePickerEntryMode.calendarOnly,
       builder: (context, child) {
+        final isMobile = MediaQuery.of(context).size.width < 600;
+        final baseTextTheme = Theme.of(context).textTheme;
         return Theme(
-          data: Theme.of(context).copyWith(colorScheme: Theme.of(context).colorScheme),
-          child: Align(
-            alignment: Alignment.topRight,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 64, right: 16),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 600,
-                  maxHeight: 500,
-                ),
+          data: Theme.of(context).copyWith(
+            platform: isMobile ? TargetPlatform.windows : Theme.of(context).platform,
+            visualDensity: VisualDensity.compact,
+            colorScheme: Theme.of(context).colorScheme,
+            textTheme: isMobile ? baseTextTheme.copyWith(
+              headlineMedium: baseTextTheme.headlineMedium?.copyWith(fontSize: 16),
+              headlineSmall: baseTextTheme.headlineSmall?.copyWith(fontSize: 16),
+              titleLarge: baseTextTheme.titleLarge?.copyWith(fontSize: 16),
+              titleMedium: baseTextTheme.titleMedium?.copyWith(fontSize: 14),
+              titleSmall: baseTextTheme.titleSmall?.copyWith(fontSize: 12),
+            ) : baseTextTheme,
+          ),
+          child: Builder(
+            builder: (context) {
+              return Align(
+                alignment: isMobile ? Alignment.center : Alignment.topRight,
+                child: Padding(
+                  padding: isMobile ? const EdgeInsets.all(16) : const EdgeInsets.only(top: 64, right: 16),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: isMobile ? MediaQuery.of(context).size.width - 32 : 600,
+                      maxHeight: isMobile ? MediaQuery.of(context).size.height * 0.75 : 500,
+                    ),
                 child: Material(
                   elevation: 8,
                   borderRadius: BorderRadius.circular(16),
                   clipBehavior: Clip.antiAlias,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Container(
-                        width: 150,
-                        color: Theme.of(context).colorScheme.surfaceContainer,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              child: Text('Quick Picks', style: Theme.of(context).textTheme.titleSmall),
-                            ),
-                            const Divider(),
-                            TextButton(
-                              child: const Align(alignment: Alignment.centerLeft, child: Text('Today')),
-                              onPressed: () {
-                                final now = DateTime.now();
-                                Navigator.pop(context, DateTimeRange(start: DateTime(now.year, now.month, now.day), end: DateTime(now.year, now.month, now.day, 23, 59, 59, 999)));
-                              },
-                            ),
-                            TextButton(
-                              child: const Align(alignment: Alignment.centerLeft, child: Text('Yesterday')),
-                              onPressed: () {
-                                final now = DateTime.now();
-                                final yesterday = now.subtract(const Duration(days: 1));
-                                Navigator.pop(context, DateTimeRange(start: DateTime(yesterday.year, yesterday.month, yesterday.day), end: DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59, 999)));
-                              },
-                            ),
-                            TextButton(
-                              child: const Align(alignment: Alignment.centerLeft, child: Text('Last Week')),
-                              onPressed: () {
-                                final now = DateTime.now();
-                                final lastWeek = now.subtract(const Duration(days: 7));
-                                Navigator.pop(context, DateTimeRange(start: DateTime(lastWeek.year, lastWeek.month, lastWeek.day), end: DateTime(now.year, now.month, now.day, 23, 59, 59, 999)));
-                              },
-                            ),
-                            TextButton(
-                              child: const Align(alignment: Alignment.centerLeft, child: Text('Last Month')),
-                              onPressed: () {
-                                final now = DateTime.now();
-                                final lastMonth = DateTime(now.year, now.month - 1, now.day);
-                                Navigator.pop(context, DateTimeRange(start: DateTime(lastMonth.year, lastMonth.month, lastMonth.day), end: DateTime(now.year, now.month, now.day, 23, 59, 59, 999)));
-                              },
-                            ),
-                            TextButton(
-                              child: const Align(alignment: Alignment.centerLeft, child: Text('Last Year')),
-                              onPressed: () {
-                                final now = DateTime.now();
-                                final lastYear = DateTime(now.year - 1, now.month, now.day);
-                                Navigator.pop(context, DateTimeRange(start: DateTime(lastYear.year, lastYear.month, lastYear.day), end: DateTime(now.year, now.month, now.day, 23, 59, 59, 999)));
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: child!,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isMobile = constraints.maxWidth < 600;
+                      return Flex(
+                        direction: isMobile ? Axis.vertical : Axis.horizontal,
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Container(
+                            width: isMobile ? double.infinity : 150,
+                            color: Theme.of(context).colorScheme.surfaceContainer,
+                            padding: EdgeInsets.symmetric(vertical: isMobile ? 8 : 16),
+                            child: isMobile
+                                ? SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                                    child: Row(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                                          child: Text('Quick Picks:', style: Theme.of(context).textTheme.titleSmall),
+                                        ),
+                                        TextButton(
+                                          child: const Text('Today'),
+                                          onPressed: () {
+                                            final now = DateTime.now();
+                                            Navigator.pop(context, DateTimeRange(start: DateTime(now.year, now.month, now.day), end: DateTime(now.year, now.month, now.day, 23, 59, 59, 999)));
+                                          },
+                                        ),
+                                        TextButton(
+                                          child: const Text('Yesterday'),
+                                          onPressed: () {
+                                            final now = DateTime.now();
+                                            final yesterday = now.subtract(const Duration(days: 1));
+                                            Navigator.pop(context, DateTimeRange(start: DateTime(yesterday.year, yesterday.month, yesterday.day), end: DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59, 999)));
+                                          },
+                                        ),
+                                        TextButton(
+                                          child: const Text('Last Week'),
+                                          onPressed: () {
+                                            final now = DateTime.now();
+                                            final lastWeek = now.subtract(const Duration(days: 7));
+                                            Navigator.pop(context, DateTimeRange(start: DateTime(lastWeek.year, lastWeek.month, lastWeek.day), end: DateTime(now.year, now.month, now.day, 23, 59, 59, 999)));
+                                          },
+                                        ),
+                                        TextButton(
+                                          child: const Text('Last Month'),
+                                          onPressed: () {
+                                            final now = DateTime.now();
+                                            final lastMonth = DateTime(now.year, now.month - 1, now.day);
+                                            Navigator.pop(context, DateTimeRange(start: DateTime(lastMonth.year, lastMonth.month, lastMonth.day), end: DateTime(now.year, now.month, now.day, 23, 59, 59, 999)));
+                                          },
+                                        ),
+                                        TextButton(
+                                          child: const Text('Last Year'),
+                                          onPressed: () {
+                                            final now = DateTime.now();
+                                            final lastYear = DateTime(now.year - 1, now.month, now.day);
+                                            Navigator.pop(context, DateTimeRange(start: DateTime(lastYear.year, lastYear.month, lastYear.day), end: DateTime(now.year, now.month, now.day, 23, 59, 59, 999)));
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : Column(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                        child: Text('Quick Picks', style: Theme.of(context).textTheme.titleSmall),
+                                      ),
+                                      const Divider(),
+                                      TextButton(
+                                        child: const Align(alignment: Alignment.centerLeft, child: Text('Today')),
+                                        onPressed: () {
+                                          final now = DateTime.now();
+                                          Navigator.pop(context, DateTimeRange(start: DateTime(now.year, now.month, now.day), end: DateTime(now.year, now.month, now.day, 23, 59, 59, 999)));
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: const Align(alignment: Alignment.centerLeft, child: Text('Yesterday')),
+                                        onPressed: () {
+                                          final now = DateTime.now();
+                                          final yesterday = now.subtract(const Duration(days: 1));
+                                          Navigator.pop(context, DateTimeRange(start: DateTime(yesterday.year, yesterday.month, yesterday.day), end: DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59, 999)));
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: const Align(alignment: Alignment.centerLeft, child: Text('Last Week')),
+                                        onPressed: () {
+                                          final now = DateTime.now();
+                                          final lastWeek = now.subtract(const Duration(days: 7));
+                                          Navigator.pop(context, DateTimeRange(start: DateTime(lastWeek.year, lastWeek.month, lastWeek.day), end: DateTime(now.year, now.month, now.day, 23, 59, 59, 999)));
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: const Align(alignment: Alignment.centerLeft, child: Text('Last Month')),
+                                        onPressed: () {
+                                          final now = DateTime.now();
+                                          final lastMonth = DateTime(now.year, now.month - 1, now.day);
+                                          Navigator.pop(context, DateTimeRange(start: DateTime(lastMonth.year, lastMonth.month, lastMonth.day), end: DateTime(now.year, now.month, now.day, 23, 59, 59, 999)));
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: const Align(alignment: Alignment.centerLeft, child: Text('Last Year')),
+                                        onPressed: () {
+                                          final now = DateTime.now();
+                                          final lastYear = DateTime(now.year - 1, now.month, now.day);
+                                          Navigator.pop(context, DateTimeRange(start: DateTime(lastYear.year, lastYear.month, lastYear.day), end: DateTime(now.year, now.month, now.day, 23, 59, 59, 999)));
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                          if (isMobile) const Divider(height: 1, thickness: 1),
+                          Flexible(
+                            child: child!,
+                          ),
+                        ],
+                      );
+                    },
+                  ), // LayoutBuilder
+                ), // Material
+              ), // ConstrainedBox
+            ), // Padding
+          ); // return Align
+        },
+      ), // Builder
+    ); // Theme
+  }, // builder
+); // showDateRangePicker
 
     if (picked != null && context.mounted) {
       final startDate = DateTime(picked.start.year, picked.start.month, picked.start.day);
@@ -250,7 +328,7 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
                                                 },
                                                 onLongPress: () {
                                                   Clipboard.setData(ClipboardData(text: item.id));
-                                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Payment ID copied to clipboard'), behavior: SnackBarBehavior.floating));
+                                                  AppErrorHandler.show(context, 'Payment ID copied to clipboard');
                                                 },
                                                 child: Text(
                                                   '#${item.id.length > 10 ? '${item.id.substring(0, 10)}...' : item.id}',
@@ -273,7 +351,7 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
                                                 },
                                                 onLongPress: () {
                                                   Clipboard.setData(ClipboardData(text: item.orderId));
-                                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Order ID copied to clipboard'), behavior: SnackBarBehavior.floating));
+                                                  AppErrorHandler.show(context, 'Order ID copied to clipboard');
                                                 },
                                                 child: Text(
                                                   '#${item.orderId.length > 10 ? '${item.orderId.substring(0, 10)}...' : item.orderId}',
@@ -297,7 +375,7 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
                                                       },
                                                       onLongPress: () {
                                                         Clipboard.setData(ClipboardData(text: item.customerId!));
-                                                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Customer ID copied to clipboard'), behavior: SnackBarBehavior.floating));
+                                                        AppErrorHandler.show(context, 'Customer ID copied to clipboard');
                                                       },
                                                       child: Text(
                                                         '#${item.customerId!.length > 10 ? '${item.customerId!.substring(0, 10)}...' : item.customerId}',
@@ -424,16 +502,20 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
     final totalPages = (state.total / limit).ceil();
 
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          const Text('Rows per page:'),
-          const SizedBox(width: 8),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerRight,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(MediaQuery.of(context).size.width < 600 ? 'Page:' : 'Rows per page:'),
+            const SizedBox(width: 8),
           DropdownButton<int>(
             value: limit,
             underline: const SizedBox.shrink(),
@@ -449,10 +531,10 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
               }
             },
           ),
-          const SizedBox(width: 24),
+          SizedBox(width: MediaQuery.of(context).size.width < 600 ? 12 : 24),
           Text(
               'Page $currentPage of ${totalPages == 0 ? 1 : totalPages} (${state.total} total)'),
-          const SizedBox(width: 24),
+          SizedBox(width: MediaQuery.of(context).size.width < 600 ? 8 : 24),
           IconButton(
             icon: const Icon(Icons.chevron_left),
             onPressed: currentOffset == 0
@@ -472,6 +554,7 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
             tooltip: 'Next Page',
           ),
         ],
+      ),
       ),
     );
   }

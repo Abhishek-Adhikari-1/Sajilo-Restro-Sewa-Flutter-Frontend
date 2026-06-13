@@ -1,3 +1,4 @@
+import 'package:sajilo_restro_sewa/core/errors/app_error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -11,6 +12,7 @@ import 'order_details_screen.dart';
 import '../../../../shared/widgets/custom_filter_chip.dart';
 import '../../../tables/presentation/cubit/table_cubit.dart';
 import '../../../tables/presentation/cubit/table_state.dart';
+import '../../../tables/presentation/screens/tables_screen.dart';
 
 class ActiveOrdersScreen extends StatefulWidget {
   final TableModel? table;
@@ -38,10 +40,24 @@ class _ActiveOrdersScreenState extends State<ActiveOrdersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: _buildFilters(),
-        // centerTitle: true,
+        title: const Text("Orders"),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         surfaceTintColor: Colors.transparent,
+        actions: [
+          if (widget.table == null)
+            IconButton(
+              icon: const Icon(Icons.add),
+              tooltip: 'New Order',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const TablesScreen(),
+                  ),
+                );
+              },
+            ),
+        ],
       ),
       body: BlocBuilder<OrderCubit, OrderState>(
         builder: (context, state) {
@@ -79,7 +95,7 @@ class _ActiveOrdersScreenState extends State<ActiveOrdersScreen> {
 
             return Column(
               children: [
-                // _buildFilters(),
+                _buildFilters(),
                 Expanded(
                   child: tableOrders.isEmpty
                       ? EmptyState(
@@ -125,11 +141,13 @@ class _ActiveOrdersScreenState extends State<ActiveOrdersScreen> {
 
   Widget _buildFilters() {
     final filters = ['All', 'Pending', 'Preparing', 'Ready', 'Served'];
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: filters.map((filter) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: filters.map((filter) {
           return Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: CustomFilterChip(
@@ -144,7 +162,7 @@ class _ActiveOrdersScreenState extends State<ActiveOrdersScreen> {
           );
         }).toList(),
       ),
-    );
+    ));
   }
 
   Widget _buildOrderCard(OrderModel order, BuildContext context) {
@@ -153,11 +171,9 @@ class _ActiveOrdersScreenState extends State<ActiveOrdersScreen> {
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: theme.brightness == Brightness.light ? 0 : 3,
+      elevation: 0,
       shape: RoundedRectangleBorder(
-        side: theme.brightness == Brightness.light 
-            ? BorderSide(color: theme.colorScheme.outlineVariant) 
-            : BorderSide.none,
+        side: BorderSide(color: theme.colorScheme.outlineVariant.withAlpha(128)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
@@ -280,12 +296,7 @@ class _ActiveOrdersScreenState extends State<ActiveOrdersScreen> {
                         order.id,
                         'served',
                       );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Order marked as served!'),
-                          backgroundColor: Colors.purple,
-                        ),
-                      );
+                      AppErrorHandler.show(context, 'Order marked as served!');
                     },
                   ),
                 ),
@@ -307,12 +318,7 @@ class _ActiveOrdersScreenState extends State<ActiveOrdersScreen> {
                         order.id,
                         'billing',
                       );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Order completed. Table seats are freed up!'),
-                          backgroundColor: Colors.teal,
-                        ),
-                      );
+                      AppErrorHandler.show(context, 'Order completed. Table seats are freed up!');
                     },
                   ),
                 ),

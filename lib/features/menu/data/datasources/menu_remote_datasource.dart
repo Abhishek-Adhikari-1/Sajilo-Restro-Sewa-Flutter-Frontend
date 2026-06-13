@@ -9,20 +9,25 @@ class MenuRemoteDataSource {
 
   MenuRemoteDataSource(this._dio);
 
-  Future<List<CategoryModel>> getCategories({int cursor = 0, int limit = 25}) async {
+  Future<(List<CategoryModel>, int)> getCategories({int cursor = 0, int limit = 25, String? search}) async {
     try {
       final response = await _dio.get(ApiEndpoints.categories, queryParameters: {
         if (cursor > 0) 'offset': cursor,
         'limit': limit,
+        if (search != null && search.isNotEmpty) 'search': search,
       });
       final data = response.data is Map<String, dynamic> && response.data.containsKey('categories') 
           ? response.data['categories'] 
           : response.data;
           
+      final total = response.data is Map<String, dynamic> && response.data.containsKey('total') 
+          ? (response.data['total'] as int? ?? 0)
+          : 0;
+
       if (data is List) {
-        return data.map((e) => CategoryModel.fromJson(e)).toList();
+        return (data.map((e) => CategoryModel.fromJson(e)).toList(), total);
       }
-      return [];
+      return (<CategoryModel>[], 0);
     } on DioException catch (e) {
       if (e.response?.data != null && e.response?.data is Map<String, dynamic>) {
         throw ApiException.fromJson(e.response!.data);
@@ -31,11 +36,12 @@ class MenuRemoteDataSource {
     }
   }
 
-  Future<List<MenuItemModel>> getMenus({
+  Future<(List<MenuItemModel>, int)> getMenus({
     int cursor = 0,
     int limit = 25,
     String? search,
     String? categoryId,
+    bool? isAvailable,
   }) async {
     try {
       final response = await _dio.get(ApiEndpoints.menus, queryParameters: {
@@ -43,15 +49,20 @@ class MenuRemoteDataSource {
         'limit': limit,
         if (search != null && search.isNotEmpty) 'search': search,
         if (categoryId != null && categoryId.isNotEmpty) 'categoryId': categoryId,
+        'isAvailable': ?isAvailable,
       });
       final data = response.data is Map<String, dynamic> && response.data.containsKey('menus') 
           ? response.data['menus'] 
           : response.data;
+      final total = response.data is Map<String, dynamic> && response.data.containsKey('total') 
+          ? (response.data['total'] as int? ?? 0)
+          : 0;
 
       if (data is List) {
-        return data.map((e) => MenuItemModel.fromJson(e)).toList();
+        final list = data.map((e) => MenuItemModel.fromJson(e)).toList();
+        return (list, total);
       }
-      return [];
+      return (<MenuItemModel>[], 0);
     } on DioException catch (e) {
       if (e.response?.data != null && e.response?.data is Map<String, dynamic>) {
         throw ApiException.fromJson(e.response!.data);
@@ -105,14 +116,18 @@ class MenuRemoteDataSource {
     }
   }
 
-  Future<MenuItemModel> toggleAvailability(String id) async {
+  Future<MenuItemModel> toggleAvailability(String id, bool isAvailable) async {
     try {
-      final response =
-          await _dio.patch('${ApiEndpoints.menus}/$id/toggle-availability');
+      final response = await _dio.patch(
+        '${ApiEndpoints.menus}/$id/status',
+        data: {'isAvailable': isAvailable},
+      );
       final responseData = response.data is Map<String, dynamic> &&
               response.data.containsKey('data')
           ? response.data['data']
-          : response.data;
+          : (response.data is Map<String, dynamic> && response.data.containsKey('menu')
+              ? response.data['menu']
+              : response.data);
       return MenuItemModel.fromJson(responseData as Map<String, dynamic>);
     } on DioException catch (e) {
       if (e.response?.data != null && e.response?.data is Map<String, dynamic>) {

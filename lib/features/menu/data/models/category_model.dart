@@ -2,6 +2,7 @@ class CategoryModel {
   final String id;
   final String name;
   final String? icon;
+  final String? iconId;
   final String? description;
   final bool isActive;
   final DateTime createdAt;
@@ -11,6 +12,7 @@ class CategoryModel {
     required this.id,
     required this.name,
     this.icon,
+    this.iconId,
     this.description,
     required this.isActive,
     required this.createdAt,
@@ -22,6 +24,7 @@ class CategoryModel {
       id: json['id'] as String? ?? '',
       name: json['name'] as String? ?? '',
       icon: (json['icon'] is Map) ? (json['icon'] as Map)['url'] as String? : json['icon'] as String?,
+      iconId: json['iconId'] as String? ?? json['icon_id'] as String?,
       description: json['description'] as String?,
       isActive: json['isActive'] as bool? ?? json['is_active'] as bool? ?? true,
       createdAt: _parseTimestamp(json['createdAt'] ?? json['created_at']),
@@ -33,6 +36,8 @@ class CategoryModel {
         'id': id,
         'name': name,
         'icon': icon,
+        'iconId': iconId,
+        'icon_id': iconId,
         'description': description,
         'isActive': isActive,
         'createdAt': createdAt.toIso8601String(),

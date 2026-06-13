@@ -1,3 +1,4 @@
+import 'package:sajilo_restro_sewa/core/errors/app_error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -35,6 +36,9 @@ import 'features/payments/data/repositories/payment_repository.dart';
 import 'features/payments/data/datasources/payment_remote_datasource.dart';
 import 'core/constants/app_constants.dart';
 import 'core/storage/secure_storage.dart';
+import 'features/staff/presentation/cubit/staff_cubit.dart';
+import 'features/staff/domain/repositories/staff_repository.dart';
+import 'features/staff/data/datasources/staff_remote_datasource.dart';
 
 class MyCustomScrollBehavior extends MaterialScrollBehavior {
   @override
@@ -127,6 +131,13 @@ class App extends StatelessWidget {
             ),
           ),
         ),
+        BlocProvider(
+          create: (_) => StaffCubit(
+            StaffRepository(
+              StaffRemoteDataSource(configuredDio),
+            ),
+          ),
+        ),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
@@ -154,15 +165,7 @@ class AuthGate extends StatelessWidget {
       listenWhen: (_, current) => true,
       listener: (context, state) {
         if (state is Unauthenticated && state.errorMessage != null) {
-          ScaffoldMessenger.of(context)
-            ..clearSnackBars()
-            ..showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage!),
-                backgroundColor: Colors.red.shade700,
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+          AppErrorHandler.show(context, state.errorMessage!);
         }
         if (state is Authenticated) {
           // Connect socket and fetch tables proactively

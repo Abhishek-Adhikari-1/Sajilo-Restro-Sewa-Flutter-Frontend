@@ -1,3 +1,4 @@
+import 'package:sajilo_restro_sewa/core/errors/app_error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -70,15 +71,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         });
       } else {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No customer found')),
-        );
+        AppErrorHandler.show(context, 'No customer found');
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No customer found')),
-      );
+      AppErrorHandler.show(context, 'No customer found');
     } finally {
       if (mounted) setState(() => _isSearchingCustomer = false);
     }
@@ -90,27 +87,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final subtotal = widget.order.totalAmount;
 
     if (discountValue < 0 || taxValue < 0) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Values cannot be negative'), backgroundColor: Colors.red));
+      AppErrorHandler.show(context, 'Values cannot be negative');
       return;
     }
 
     if (_discountType == 'percentage' && discountValue > 100) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Discount percentage cannot exceed 100%'), backgroundColor: Colors.red));
+      AppErrorHandler.show(context, 'Discount percentage cannot exceed 100%');
       return;
     }
 
     if (_discountType == 'fixed' && discountValue > subtotal) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fixed discount cannot exceed the subtotal'), backgroundColor: Colors.red));
+      AppErrorHandler.show(context, 'Fixed discount cannot exceed the subtotal');
       return;
     }
 
     if (_taxType == 'percentage' && taxValue > 100) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tax percentage cannot exceed 100%'), backgroundColor: Colors.red));
+      AppErrorHandler.show(context, 'Tax percentage cannot exceed 100%');
       return;
     }
 
     if (_calculateTotal() < 0) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Total amount cannot be negative'), backgroundColor: Colors.red));
+      AppErrorHandler.show(context, 'Total amount cannot be negative');
       return;
     }
 
@@ -183,13 +180,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       body: BlocListener<PaymentCubit, PaymentState>(
         listener: (context, state) {
           if (state is PaymentError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
-            );
+            AppErrorHandler.showError(context, state.message);
           } else if (state is PaymentSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Payment processed successfully!'), backgroundColor: Colors.green),
-            );
+            AppErrorHandler.showSuccess(context, 'Payment processed successfully!');
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -272,19 +265,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       onTap: () => setState(() => _paymentMethod = value),
       borderRadius: BorderRadius.circular(8),
       child: Padding(
-        padding: const EdgeInsets.only(right: 16.0),
+        padding: const EdgeInsets.only(right: 8.0),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             // ignore: deprecated_member_use
             Radio<String>(
+              visualDensity: VisualDensity.compact,
               value: value,
               // ignore: deprecated_member_use
               groupValue: _paymentMethod,
               // ignore: deprecated_member_use
               onChanged: (val) => setState(() => _paymentMethod = val!),
             ),
-            Text(title),
+            Text(value == 'mobile_wallet' ? 'Wallet' : title),
           ],
         ),
       ),
@@ -346,6 +340,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
+                        style: FilledButton.styleFrom(visualDensity: VisualDensity.compact),
                         onPressed: _lookupCustomer,
                         child: const Text('Set Customer Details'),
                       ),
@@ -486,15 +481,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 const Expanded(flex: 1, child: Text('Discount:')),
                 Expanded(
                   flex: 1,
-                  child: SegmentedButton<String>(
-                    segments: const [
-                      ButtonSegment(value: 'fixed', label: Text('Rs')),
-                      ButtonSegment(value: 'percentage', label: Text('%')),
-                    ],
-                    selected: {_discountType},
-                    onSelectionChanged: (val) {
-                      setState(() => _discountType = val.first);
-                    },
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(value: 'fixed', label: Text('Rs')),
+                        ButtonSegment(value: 'percentage', label: Text('%')),
+                      ],
+                      selected: {_discountType},
+                      onSelectionChanged: (val) {
+                        setState(() => _discountType = val.first);
+                      },
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -521,15 +519,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 const Expanded(flex: 1, child: Text('Tax:')),
                 Expanded(
                   flex: 1,
-                  child: SegmentedButton<String>(
-                    segments: const [
-                      ButtonSegment(value: 'fixed', label: Text('Rs')),
-                      ButtonSegment(value: 'percentage', label: Text('%')),
-                    ],
-                    selected: {_taxType},
-                    onSelectionChanged: (val) {
-                      setState(() => _taxType = val.first);
-                    },
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(value: 'fixed', label: Text('Rs')),
+                        ButtonSegment(value: 'percentage', label: Text('%')),
+                      ],
+                      selected: {_taxType},
+                      onSelectionChanged: (val) {
+                        setState(() => _taxType = val.first);
+                      },
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -609,7 +610,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     label: const Text('Process Payment', style: TextStyle(fontSize: 16)),
                     style: FilledButton.styleFrom(
                       backgroundColor: Colors.green,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      visualDensity: VisualDensity.compact,
                     ),
                   );
                 },

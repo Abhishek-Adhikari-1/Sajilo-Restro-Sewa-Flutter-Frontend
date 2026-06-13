@@ -5,6 +5,7 @@ class MenuItemModel {
   final double price;
   final String? categoryId; // Note: backend stores as 'category'
   final String? image;
+  final String? imageId;
   final bool isAvailable;
   final int estimatedPreparationTime;
   final DateTime createdAt;
@@ -17,6 +18,7 @@ class MenuItemModel {
     required this.price,
     this.categoryId,
     this.image,
+    this.imageId,
     required this.isAvailable,
     required this.estimatedPreparationTime,
     required this.createdAt,
@@ -31,6 +33,7 @@ class MenuItemModel {
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
       categoryId: json['categoryId'] as String? ?? json['category_id'] as String? ?? json['category'] as String?,
       image: (json['image'] is Map) ? (json['image'] as Map)['url'] as String? : json['image'] as String?,
+      imageId: json['imageId'] as String? ?? json['image_id'] as String?,
       isAvailable: json['isAvailable'] as bool? ?? json['is_available'] as bool? ?? true,
       estimatedPreparationTime:
           (json['estimatedPreparationTime'] as num?)?.toInt() ?? (json['estimated_preparation_time'] as num?)?.toInt() ?? 0,
@@ -46,6 +49,8 @@ class MenuItemModel {
         'price': price,
         'categoryId': categoryId,
         'image': image,
+        'imageId': imageId,
+        'image_id': imageId,
         'isAvailable': isAvailable,
         'estimatedPreparationTime': estimatedPreparationTime,
         'createdAt': createdAt.toIso8601String(),

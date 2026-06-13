@@ -1,3 +1,4 @@
+import 'package:sajilo_restro_sewa/core/errors/app_error_handler.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -225,9 +226,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen>
                                   icon: Icons.send_rounded,
                                   onPressed: () {
                                     context.read<AuthCubit>().resendVerification();
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Verification email requested')),
-                                    );
+                                    AppErrorHandler.showSuccess(context, 'Verification email requested');
                                   },
                                 ),
                               ],

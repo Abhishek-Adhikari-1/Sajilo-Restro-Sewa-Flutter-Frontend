@@ -128,26 +128,26 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 icon: Icons.payments,
                 iconColor: Colors.green,
                 label: "Today's Revenue",
-                value: currencyFormat.format(data['totalRevenue'] ?? 0),
+                value: currencyFormat.format(data['totalRevenueToday'] ?? 0),
                 trend: '+12%',
               ),
               StatCard(
                 icon: Icons.receipt_long,
                 iconColor: Colors.blue,
-                label: "Total Orders",
-                value: (data['totalOrders'] ?? 0).toString(),
+                label: "Recent Orders",
+                value: ((data['recentOrders'] as List?)?.length ?? 0).toString(),
               ),
               StatCard(
                 icon: Icons.restaurant,
                 iconColor: Colors.orange,
                 label: "Active Orders",
-                value: (data['activeOrders'] ?? 0).toString(),
+                value: (data['activeOrdersCount'] ?? 0).toString(),
               ),
               StatCard(
-                icon: Icons.people,
+                icon: Icons.table_restaurant,
                 iconColor: Colors.purple,
-                label: "Active Staff",
-                value: "${data['staffCount']?['active'] ?? 0}/${data['staffCount']?['total'] ?? 0}",
+                label: "Tables (Occ/Avail)",
+                value: "${data['tableStats']?['occupied'] ?? 0}/${data['tableStats']?['available'] ?? 0}",
               ),
             ],
           ),
@@ -197,19 +197,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          const SectionHeader(title: "Top Menu Items"),
-          ...(data['topMenuItems'] as List<dynamic>? ?? []).map((item) {
+          const SectionHeader(title: "Recent Active Orders"),
+          ...(data['recentOrders'] as List<dynamic>? ?? []).map((item) {
             return ListTile(
               leading: CircleAvatar(
                 backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                 child: Text(
-                  (item['name']?.toString() ?? '?').isNotEmpty ? (item['name']?.toString() ?? '?').substring(0, 1) : '?',
-                  style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),
+                  '#${item['orderNumber'] ?? item['id']?.toString().substring(0, 3) ?? '?'}',
+                  style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer, fontSize: 12),
                 ),
               ),
-              title: Text(item['name']?.toString() ?? 'Unknown Item'),
+              title: Text('Table ${item['table_number'] ?? item['table_id'] ?? 'Unknown'}'),
               trailing: Text(
-                '${item['count'] ?? 0} sold',
+                item['status']?.toString().toUpperCase() ?? 'PENDING',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             );

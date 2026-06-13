@@ -98,7 +98,7 @@ class _CashierDashboardScreenState extends State<CashierDashboardScreen> {
             mainAxisSpacing: 16,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: isDesktop ? 2.5 : 1.5,
+            childAspectRatio: isDesktop ? 2.5 : 1.1,
             children: [
               StatCard(
                 icon: Icons.pending_actions,
@@ -137,6 +137,7 @@ class _CashierDashboardScreenState extends State<CashierDashboardScreen> {
           else
             ...(data['recentOrders'] as List<dynamic>).map((order) {
               return Card(
+                clipBehavior: Clip.antiAlias,
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
                   leading: const CircleAvatar(
@@ -146,6 +147,7 @@ class _CashierDashboardScreenState extends State<CashierDashboardScreen> {
                   title: Text('Table ${order['table_number'] ?? (order['table_id']?.toString() ?? 'UKWN').substring(0, 4)}'),
                   subtitle: Text('${order['items']?.length ?? 0} items'),
                   trailing: ElevatedButton(
+                    style: ElevatedButton.styleFrom(visualDensity: VisualDensity.compact),
                     onPressed: () {
                       final orderModel = OrderModel.fromJson(order as Map<String, dynamic>);
                       Navigator.push(

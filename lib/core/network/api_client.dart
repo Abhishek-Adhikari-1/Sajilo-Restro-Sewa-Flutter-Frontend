@@ -57,7 +57,55 @@ class ApiClient {
       throw ApiException(message: 'Unexpected error occurred: $e');
     }
   }
+  Future<dynamic> put(String endpoint, {Map<String, dynamic>? body, bool requiresAuth = true}) async {
+    try {
+      final headers = await _getHeaders(requiresAuth: requiresAuth);
+      final response = await _client.put(
+        Uri.parse('${AppConstants.apiBaseUrl}$endpoint'),
+        headers: headers,
+        body: body != null ? jsonEncode(body) : null,
+      ).timeout(const Duration(seconds: 10));
+      return _processResponse(response);
+    } on SocketException {
+      throw ApiException(message: 'No Internet connection');
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(message: 'Unexpected error occurred: $e');
+    }
+  }
 
+  Future<dynamic> patch(String endpoint, {Map<String, dynamic>? body, bool requiresAuth = true}) async {
+    try {
+      final headers = await _getHeaders(requiresAuth: requiresAuth);
+      final response = await _client.patch(
+        Uri.parse('${AppConstants.apiBaseUrl}$endpoint'),
+        headers: headers,
+        body: body != null ? jsonEncode(body) : null,
+      ).timeout(const Duration(seconds: 10));
+      return _processResponse(response);
+    } on SocketException {
+      throw ApiException(message: 'No Internet connection');
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(message: 'Unexpected error occurred: $e');
+    }
+  }
+
+  Future<dynamic> delete(String endpoint, {bool requiresAuth = true}) async {
+    try {
+      final headers = await _getHeaders(requiresAuth: requiresAuth);
+      final response = await _client.delete(
+        Uri.parse('${AppConstants.apiBaseUrl}$endpoint'),
+        headers: headers,
+      ).timeout(const Duration(seconds: 10));
+      return _processResponse(response);
+    } on SocketException {
+      throw ApiException(message: 'No Internet connection');
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(message: 'Unexpected error occurred: $e');
+    }
+  }
   dynamic _processResponse(http.Response response) {
     final body = jsonDecode(response.body);
     

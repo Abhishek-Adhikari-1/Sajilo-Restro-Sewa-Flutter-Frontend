@@ -2,13 +2,10 @@ import 'package:flutter/material.dart';
 
 abstract class AppErrorHandler {
   static void show(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).clearSnackBars();
+    
+     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red.shade700,
-        behavior: SnackBarBehavior.floating,
-      ),
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
   }
 
@@ -18,6 +15,28 @@ abstract class AppErrorHandler {
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.green.shade700,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  static void showWarning(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.orange.shade800,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  static void showError(BuildContext context, String message) {
+   ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade700,
         behavior: SnackBarBehavior.floating,
       ),
     );

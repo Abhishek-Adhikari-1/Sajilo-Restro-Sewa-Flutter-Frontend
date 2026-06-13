@@ -3,7 +3,7 @@ import '../../../../shared/widgets/responsive_shell.dart';
 import '../../../../features/auth/data/models/user_model.dart';
 import '../screens/admin_dashboard_screen.dart';
 import '../../../../features/settings/presentation/screens/settings_screen.dart';
-import '../../../../features/orders/presentation/screens/active_orders_screen.dart';
+import '../screens/manage_screen.dart';
 
 class AdminShell extends StatelessWidget {
   final UserModel user;
@@ -15,16 +15,12 @@ class AdminShell extends StatelessWidget {
     return ResponsiveShell(
       destinations: const [
         NavigationDestination(icon: Icon(Icons.dashboard), label: 'Dashboard'),
-        NavigationDestination(icon: Icon(Icons.restaurant_menu), label: 'Menu'),
-        NavigationDestination(icon: Icon(Icons.receipt_long), label: 'Orders'),
-        NavigationDestination(icon: Icon(Icons.people), label: 'Staff'),
+        NavigationDestination(icon: Icon(Icons.admin_panel_settings), label: 'Manage'),
         NavigationDestination(icon: Icon(Icons.settings), label: 'Settings'),
       ],
       screens: [
         AdminDashboardScreen(user: user),
-        const Scaffold(body: Center(child: Text('Menu Screen Placeholder'))),
-        const ActiveOrdersScreen(),
-        const Scaffold(body: Center(child: Text('Staff Screen Placeholder'))),
+        const ManageScreen(),
         const SettingsScreen(),
       ],
     );

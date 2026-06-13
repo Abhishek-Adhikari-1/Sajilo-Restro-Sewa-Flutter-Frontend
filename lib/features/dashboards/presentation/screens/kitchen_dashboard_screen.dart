@@ -133,6 +133,7 @@ class _KitchenDashboardScreenState extends State<KitchenDashboardScreen> {
             ...(data['recentOrders'] as List<dynamic>).map((order) {
               return Card(
                 margin: const EdgeInsets.only(bottom: 8),
+                clipBehavior: Clip.antiAlias,
                 child: ExpansionTile(
                   leading: CircleAvatar(
                     backgroundColor: order['status'] == 'pending' 

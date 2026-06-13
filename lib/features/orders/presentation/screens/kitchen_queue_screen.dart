@@ -1,3 +1,4 @@
+import 'package:sajilo_restro_sewa/core/errors/app_error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
@@ -260,6 +261,7 @@ class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       elevation: 2,
+      clipBehavior: Clip.antiAlias,
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
@@ -362,6 +364,8 @@ class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
                         label: const Text(
                           'Prepare',
                           style: TextStyle(fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -382,6 +386,8 @@ class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
                         label: const Text(
                           'Ready',
                           style: TextStyle(fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         style: FilledButton.styleFrom(
                           backgroundColor: Colors.green.shade600,
@@ -423,21 +429,16 @@ class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
                         order.id,
                         nextStatus,
                       );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Order moved to $nextStatus'),
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      );
+                      AppErrorHandler.show(context, 'Order moved to $nextStatus');
                     },
-                    label: Text(
-                      isPending ? 'START COOKING ALL' : 'MARK ALL READY',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.1,
+                    label: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        isPending ? 'START COOKING ALL' : 'MARK ALL READY',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.1,
+                        ),
                       ),
                     ),
                   ),

@@ -14,6 +14,8 @@ class MenuCubit extends Cubit<MenuState> {
 
   MenuCubit(this._repository, this._socketClient) : super(MenuInitial());
 
+  MenuRepository get repository => _repository;
+
   void initSocket() {
     _socketClient.socket?.on('menu_updated', (data) {
       if (data == null) return;
@@ -39,23 +41,37 @@ class MenuCubit extends Cubit<MenuState> {
       try {
         if (state is MenuLoaded) {
           final currentState = state as MenuLoaded;
-          final updatedMenus = currentState.menus.map((m) {
-            return m.id == data['id'] 
-              ? MenuItemModel(
-                  id: m.id,
-                  name: m.name,
-                  description: m.description,
-                  price: m.price,
-                  categoryId: m.categoryId,
-                  image: m.image,
-                  isAvailable: data['isAvailable'] ?? data['is_available'] ?? m.isAvailable,
-                  estimatedPreparationTime: m.estimatedPreparationTime,
-                  createdAt: m.createdAt,
-                  updatedAt: DateTime.tryParse(data['updatedAt'] ?? data['updated_at'] ?? '') ?? m.updatedAt,
-                ) 
-              : m;
-          }).toList();
-          emit(currentState.copyWith(menus: updatedMenus));
+          final updatedIsAvailable = data['isAvailable'] ?? data['is_available'];
+          
+          if (currentState.currentIsAvailable != null && 
+              updatedIsAvailable != null && 
+              updatedIsAvailable != currentState.currentIsAvailable) {
+            fetchMenuData(
+              search: currentState.currentSearch,
+              categoryId: currentState.currentCategoryId,
+              offset: currentState.menuOffset,
+              limit: currentState.limit,
+              isAvailable: currentState.currentIsAvailable,
+            );
+          } else {
+            final updatedMenus = currentState.menus.map((m) {
+              return m.id == data['id'] 
+                ? MenuItemModel(
+                    id: m.id,
+                    name: m.name,
+                    description: m.description,
+                    price: m.price,
+                    categoryId: m.categoryId,
+                    image: m.image,
+                    isAvailable: updatedIsAvailable ?? m.isAvailable,
+                    estimatedPreparationTime: m.estimatedPreparationTime,
+                    createdAt: m.createdAt,
+                    updatedAt: DateTime.tryParse(data['updatedAt'] ?? data['updated_at'] ?? '') ?? m.updatedAt,
+                  ) 
+                : m;
+            }).toList();
+            emit(currentState.copyWith(menus: updatedMenus));
+          }
         }
       } catch (_) {}
     });
@@ -73,7 +89,7 @@ class MenuCubit extends Cubit<MenuState> {
     });
   }
 
-  Future<void> fetchMenuData({String? search, String? categoryId}) async {
+  Future<void> fetchMenuData({String? search, String? categoryId, int offset = 0, int limit = 10, bool? isAvailable}) async {
     final currentState = state;
     List<CategoryModel> categories = [];
     
@@ -81,29 +97,46 @@ class MenuCubit extends Cubit<MenuState> {
       emit(MenuLoading());
     } else {
       categories = currentState.categories;
+      if (currentState.categorySearch != null && currentState.categorySearch!.isNotEmpty) {
+        categories = [];
+      }
     }
     
     try {
+      int catTotal = currentState is MenuLoaded ? currentState.categoryTotal : 0;
       if (categories.isEmpty) {
-        categories = await _repository.getCategories(cursor: 0, limit: 25);
+        final (fetchedCats, fetchedTotal) = await _repository.getCategories(cursor: 0, limit: 25);
+        categories = fetchedCats;
+        catTotal = fetchedTotal;
       }
       
-      final menus = await _repository.getMenus(
-        cursor: 0, 
-        limit: 25,
+      final (menus, total) = await _repository.getMenus(
+        cursor: offset, 
+        limit: limit,
         search: search,
         categoryId: categoryId,
+        isAvailable: isAvailable,
       );
       
       emit(MenuLoaded(
         categories: categories, 
         menus: menus,
         categoryCursor: currentState is MenuLoaded ? currentState.categoryCursor : categories.length,
-        menuCursor: menus.length,
+        menuCursor: offset + menus.length,
         hasReachedMaxCategories: currentState is MenuLoaded ? currentState.hasReachedMaxCategories : categories.length < 25,
-        hasReachedMaxMenus: menus.length < 25,
+        hasReachedMaxMenus: offset + menus.length >= total,
         currentSearch: search,
         currentCategoryId: categoryId,
+        total: total,
+        menuOffset: offset,
+        limit: limit,
+        currentIsAvailable: isAvailable,
+        editedMenus: currentState is MenuLoaded ? currentState.editedMenus : const {},
+        categorySearch: null,
+        categoryTotal: catTotal,
+        categoryOffset: currentState is MenuLoaded ? currentState.categoryOffset : 0,
+        categoryLimit: currentState is MenuLoaded ? currentState.categoryLimit : 25,
+        editedCategories: currentState is MenuLoaded ? currentState.editedCategories : const {},
       ));
     } on ServerFailure catch (e) {
       emit(MenuError(message: e.message));
@@ -119,16 +152,18 @@ class MenuCubit extends Cubit<MenuState> {
     emit(currentState.copyWith(isFetchingMoreMenus: true));
 
     try {
-      final menus = await _repository.getMenus(
+      final (menus, total) = await _repository.getMenus(
         cursor: currentState.menuCursor, 
         limit: 25,
         search: currentState.currentSearch,
         categoryId: currentState.currentCategoryId,
+        isAvailable: currentState.currentIsAvailable,
       );
       emit(currentState.copyWith(
         menus: List.of(currentState.menus)..addAll(menus),
         menuCursor: currentState.menuCursor + menus.length,
-        hasReachedMaxMenus: menus.length < 25,
+        hasReachedMaxMenus: currentState.menuCursor + menus.length >= total,
+        total: total,
         isFetchingMoreMenus: false,
       ));
     } catch (_) {
@@ -143,15 +178,53 @@ class MenuCubit extends Cubit<MenuState> {
     emit(currentState.copyWith(isFetchingMoreCategories: true));
 
     try {
-      final categories = await _repository.getCategories(cursor: currentState.categoryCursor, limit: 25);
+      final (fetchedCats, _) = await _repository.getCategories(cursor: currentState.categoryCursor, limit: 25, search: currentState.categorySearch);
       emit(currentState.copyWith(
-        categories: List.of(currentState.categories)..addAll(categories),
-        categoryCursor: currentState.categoryCursor + categories.length,
-        hasReachedMaxCategories: categories.length < 25,
+        categories: List.of(currentState.categories)..addAll(fetchedCats),
+        categoryCursor: currentState.categoryCursor + fetchedCats.length,
+        hasReachedMaxCategories: fetchedCats.length < 25,
         isFetchingMoreCategories: false,
       ));
     } catch (_) {
       emit(currentState.copyWith(isFetchingMoreCategories: false));
+    }
+  }
+
+  Future<void> fetchCategoriesOnly({String? search, int offset = 0, int limit = 25}) async {
+    final currentState = state;
+    if (currentState is! MenuLoaded) {
+      emit(MenuLoading());
+    }
+
+    try {
+      final (categories, total) = await _repository.getCategories(cursor: offset, limit: limit, search: search);
+      
+      if (currentState is MenuLoaded) {
+        emit(currentState.copyWith(
+          categories: categories,
+          categoryCursor: offset + categories.length,
+          hasReachedMaxCategories: offset + categories.length >= total,
+          categorySearch: search,
+          categoryOffset: offset,
+          categoryLimit: limit,
+          categoryTotal: total,
+        ));
+      } else {
+        emit(MenuLoaded(
+          categories: categories,
+          menus: const [],
+          categoryCursor: offset + categories.length,
+          hasReachedMaxCategories: offset + categories.length >= total,
+          categorySearch: search,
+          categoryOffset: offset,
+          categoryLimit: limit,
+          categoryTotal: total,
+        ));
+      }
+    } on ServerFailure catch (e) {
+      emit(MenuError(message: e.message));
+    } catch (e) {
+      emit(MenuError(message: e.toString()));
     }
   }
 
@@ -176,12 +249,22 @@ class MenuCubit extends Cubit<MenuState> {
       final updated = await _repository.updateMenuItem(id, data);
       final currentState = state;
       if (currentState is MenuLoaded) {
-        final updatedMenus = currentState.menus.map((m) {
-          return m.id == id ? updated : m;
-        }).toList();
-        emit(currentState.copyWith(
-          menus: updatedMenus,
-        ));
+        if (currentState.currentIsAvailable != null && updated.isAvailable != currentState.currentIsAvailable) {
+          fetchMenuData(
+            search: currentState.currentSearch,
+            categoryId: currentState.currentCategoryId,
+            offset: currentState.menuOffset,
+            limit: currentState.limit,
+            isAvailable: currentState.currentIsAvailable,
+          );
+        } else {
+          final updatedMenus = currentState.menus.map((m) {
+            return m.id == id ? updated : m;
+          }).toList();
+          emit(currentState.copyWith(
+            menus: updatedMenus,
+          ));
+        }
       }
     } on ServerFailure catch (e) {
       emit(MenuError(message: e.message));
@@ -207,21 +290,103 @@ class MenuCubit extends Cubit<MenuState> {
   }
 
   Future<void> toggleAvailability(String id) async {
+    final currentState = state;
+    if (currentState is! MenuLoaded) return;
+
+    final existingIndex = currentState.menus.indexWhere((m) => m.id == id);
+    if (existingIndex < 0) return;
+
+    final currentMenu = currentState.menus[existingIndex];
+    final currentLocalAvailability = currentState.editedMenus.containsKey(id)
+        ? currentState.editedMenus[id]!
+        : currentMenu.isAvailable;
+
+    final nextAvailable = !currentLocalAvailability;
+
+    final newEditedMenus = Map<String, bool>.from(currentState.editedMenus);
+
+    if (currentMenu.isAvailable == nextAvailable) {
+      newEditedMenus.remove(id);
+    } else {
+      newEditedMenus[id] = nextAvailable;
+    }
+
+    emit(currentState.copyWith(editedMenus: newEditedMenus));
+  }
+
+  Future<void> toggleCategoryAvailability(String id) async {
+    final currentState = state;
+    if (currentState is! MenuLoaded) return;
+
+    final existingIndex = currentState.categories.indexWhere((c) => c.id == id);
+    if (existingIndex < 0) return;
+
+    final currentCategory = currentState.categories[existingIndex];
+    final currentLocalAvailability = currentState.editedCategories.containsKey(id)
+        ? currentState.editedCategories[id]!
+        : currentCategory.isActive;
+
+    final nextAvailable = !currentLocalAvailability;
+
+    final newEditedCategories = Map<String, bool>.from(currentState.editedCategories);
+
+    if (currentCategory.isActive == nextAvailable) {
+      newEditedCategories.remove(id);
+    } else {
+      newEditedCategories[id] = nextAvailable;
+    }
+
+    emit(currentState.copyWith(editedCategories: newEditedCategories));
+  }
+
+  Future<void> saveChanges() async {
+    if (state is! MenuLoaded) return;
+    final currentState = state as MenuLoaded;
+    if ((currentState.editedMenus.isEmpty && currentState.editedCategories.isEmpty) || currentState.isSaving) return;
+
+    emit(currentState.copyWith(isSaving: true, clearErrorMessage: true));
+
     try {
-      final updated = await _repository.toggleAvailability(id);
-      final currentState = state;
-      if (currentState is MenuLoaded) {
-        final updatedMenus = currentState.menus.map((m) {
-          return m.id == id ? updated : m;
-        }).toList();
-        emit(currentState.copyWith(
-          menus: updatedMenus,
-        ));
+      for (final entry in currentState.editedMenus.entries) {
+        final id = entry.key;
+        final isAvailable = entry.value;
+        await _repository.toggleAvailability(id, isAvailable);
       }
+
+      for (final entry in currentState.editedCategories.entries) {
+        final id = entry.key;
+        final isActive = entry.value;
+        await _repository.updateCategory(id, {'is_active': isActive});
+      }
+
+      emit(currentState.copyWith(
+        isSaving: false,
+        editedMenus: const {},
+        editedCategories: const {},
+      ));
+
+      fetchMenuData(
+        search: currentState.currentSearch,
+        categoryId: currentState.currentCategoryId,
+        offset: currentState.menuOffset,
+        limit: currentState.limit,
+        isAvailable: currentState.currentIsAvailable,
+      );
     } on ServerFailure catch (e) {
-      emit(MenuError(message: e.message));
+      emit(currentState.copyWith(isSaving: false, errorMessage: e.message));
     } catch (e) {
-      emit(MenuError(message: e.toString()));
+      emit(currentState.copyWith(isSaving: false, errorMessage: e.toString()));
+    }
+  }
+
+  void discardChanges() {
+    if (state is MenuLoaded) {
+      final currentState = state as MenuLoaded;
+      emit(currentState.copyWith(
+        editedMenus: const {},
+        editedCategories: const {},
+        clearErrorMessage: true,
+      ));
     }
   }
 

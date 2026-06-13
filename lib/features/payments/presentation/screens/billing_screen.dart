@@ -125,6 +125,9 @@ class _BillingScreenState extends State<BillingScreen> {
                 '${items.length} items • ${currencyFormat.format(subtotal)}',
               ),
               trailing: FilledButton(
+                style: FilledButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                ),
                 onPressed: () {
                   final orderModel = OrderModel.fromJson(order as Map<String, dynamic>);
                   Navigator.push(

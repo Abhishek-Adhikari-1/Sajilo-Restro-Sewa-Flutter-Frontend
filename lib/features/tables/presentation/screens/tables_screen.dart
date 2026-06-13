@@ -1,3 +1,4 @@
+import 'package:sajilo_restro_sewa/core/errors/app_error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/table_cubit.dart';
@@ -29,7 +30,6 @@ class _TablesScreenState extends State<TablesScreen> {
   @override
   void initState() {
     super.initState();
-    // If not loaded, fetch tables. Normally injected top-level, so it should already be loaded.
     final state = context.read<TableCubit>().state;
     if (state is TableInitial) {
       context.read<TableCubit>().fetchTables();
@@ -40,7 +40,10 @@ class _TablesScreenState extends State<TablesScreen> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 50) {
-      context.read<TableCubit>().fetchMoreTables();
+      final state = context.read<TableCubit>().state;
+      if (state is TableLoaded) {
+        context.read<TableCubit>().fetchMoreTables(state.limit);
+      }
     }
   }
 
@@ -88,21 +91,21 @@ class _TablesScreenState extends State<TablesScreen> {
         Icon(
           icon,
           size: 80,
-          color: Theme.of(context).colorScheme.primary.withAlpha(76), // 0.3 opacity
+          color: Theme.of(context).colorScheme.primary.withAlpha(76),
         ),
         const SizedBox(height: 16),
         Text(
           title,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface.withAlpha(178), // 0.7 opacity
+            color: Theme.of(context).colorScheme.onSurface.withAlpha(178),
           ),
         ),
         const SizedBox(height: 8),
         Text(
           subtitle,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurface.withAlpha(127), // 0.5 opacity
+            color: Theme.of(context).colorScheme.onSurface.withAlpha(127),
           ),
           textAlign: TextAlign.center,
         ),
@@ -131,36 +134,44 @@ class _TablesScreenState extends State<TablesScreen> {
       appBar: AppBar(
         scrolledUnderElevation: 0.0,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        title: BlocBuilder<TableCubit, TableState>(
-          builder: (context, state) {
-            String currentFilter = 'all';
-            if (state is TableLoaded) {
-              currentFilter = state.filter;
-            }
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Row(
-                children: _filters.map((filter) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: CustomFilterChip(
-                      label: filter[0].toUpperCase() + filter.substring(1),
-                      isSelected: currentFilter == filter,
-                      onSelected: (_) {
-                        if (currentFilter != filter) {
-                          context.read<TableCubit>().updateFilter(filter);
-                        }
-                      },
-                    ),
-                  );
-                }).toList(),
-              ),
-            );
-          },
-        ),
+        title: const Text('Table'),
       ),
-      body: BlocBuilder<TableCubit, TableState>(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          BlocBuilder<TableCubit, TableState>(
+            builder: (context, state) {
+              String currentFilter = 'all';
+              if (state is TableLoaded) {
+                currentFilter = state.currentStatus ?? 'all';
+              }
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  children: _filters.map((filter) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: CustomFilterChip(
+                        label: filter[0].toUpperCase() + filter.substring(1),
+                        isSelected: currentFilter == filter,
+                        onSelected: (_) {
+                          if (currentFilter != filter) {
+                            context.read<TableCubit>().fetchTables(
+                              status: filter == 'all' ? null : filter,
+                              limit: state is TableLoaded ? state.limit : 25,
+                            );
+                          }
+                        },
+                      ),
+                    );
+                  }).toList(),
+                ),
+              );
+            },
+          ),
+          Expanded(
+            child: BlocBuilder<TableCubit, TableState>(
         builder: (context, state) {
           if (state is TableLoading || state is TableInitial) {
             return Column(
@@ -187,7 +198,9 @@ class _TablesScreenState extends State<TablesScreen> {
           } else if (state is TableError) {
             return Center(child: Text('Error: ${state.message}'));
           } else if (state is TableLoaded) {
-            final tables = state.filteredTables;
+            final tables = state.tables;
+            final isFetchingMore = state.tables.length < state.total;
+            final currentFilter = state.currentStatus ?? 'all';
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,7 +218,7 @@ class _TablesScreenState extends State<TablesScreen> {
                                 height:
                                     MediaQuery.of(context).size.height * 0.5,
                                 child: Center(
-                                  child: _buildEmptyState(context, state.filter),
+                                  child: _buildEmptyState(context, currentFilter),
                                 ),
                               ),
                             ],
@@ -222,7 +235,7 @@ class _TablesScreenState extends State<TablesScreen> {
                                   mainAxisSpacing: 16,
                                 ),
                             itemCount:
-                                tables.length + (state.isFetchingMore ? 1 : 0),
+                                tables.length + (isFetchingMore ? 1 : 0),
                             itemBuilder: (context, index) {
                               if (index == tables.length) {
                                 return const Center(
@@ -250,12 +263,7 @@ class _TablesScreenState extends State<TablesScreen> {
                                       ),
                                     );
                                   } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Table ${table.tableNumber} is ${table.status}.'),
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
+                                    AppErrorHandler.showError(context, 'Table ${table.tableNumber} is ${table.status}.');
                                   }
                                 },
                               );
@@ -268,6 +276,9 @@ class _TablesScreenState extends State<TablesScreen> {
           }
           return const SizedBox.shrink();
         },
+      ),
+          ),
+        ],
       ),
     );
   }

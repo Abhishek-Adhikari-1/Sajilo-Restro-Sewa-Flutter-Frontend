@@ -1,3 +1,4 @@
+import 'package:sajilo_restro_sewa/core/errors/app_error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../orders/data/models/order_model.dart';
@@ -166,14 +167,12 @@ class ReceiptScreen extends StatelessWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Printing receipt...')),
-                    );
+                    AppErrorHandler.show(context, 'Printing receipt...');
                   },
                   icon: const Icon(Icons.print),
                   label: const Text('Print Receipt'),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
               ),
@@ -187,7 +186,7 @@ class ReceiptScreen extends StatelessWidget {
                   icon: const Icon(Icons.check),
                   label: const Text('Done'),
                   style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                     backgroundColor: Colors.green,
                   ),
                 ),

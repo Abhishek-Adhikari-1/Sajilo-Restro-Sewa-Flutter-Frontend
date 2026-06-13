@@ -9,9 +9,9 @@ class MenuRepository {
 
   MenuRepository(this._remoteDataSource);
 
-  Future<List<CategoryModel>> getCategories({int cursor = 0, int limit = 20}) async {
+  Future<(List<CategoryModel>, int)> getCategories({int cursor = 0, int limit = 20, String? search}) async {
     try {
-      return await _remoteDataSource.getCategories(cursor: cursor, limit: limit);
+      return await _remoteDataSource.getCategories(cursor: cursor, limit: limit, search: search);
     } on ApiException catch (e) {
       throw ServerFailure(e.message, code: e.code, errors: e.errors);
     } catch (e) {
@@ -19,11 +19,12 @@ class MenuRepository {
     }
   }
 
-  Future<List<MenuItemModel>> getMenus({
+  Future<(List<MenuItemModel>, int)> getMenus({
     int cursor = 0,
     int limit = 25,
     String? search,
     String? categoryId,
+    bool? isAvailable,
   }) async {
     try {
       return await _remoteDataSource.getMenus(
@@ -31,6 +32,7 @@ class MenuRepository {
         limit: limit,
         search: search,
         categoryId: categoryId,
+        isAvailable: isAvailable,
       );
     } on ApiException catch (e) {
       throw ServerFailure(e.message, code: e.code, errors: e.errors);
@@ -70,9 +72,9 @@ class MenuRepository {
     }
   }
 
-  Future<MenuItemModel> toggleAvailability(String id) async {
+  Future<MenuItemModel> toggleAvailability(String id, bool isAvailable) async {
     try {
-      return await _remoteDataSource.toggleAvailability(id);
+      return await _remoteDataSource.toggleAvailability(id, isAvailable);
     } on ApiException catch (e) {
       throw ServerFailure(e.message, code: e.code, errors: e.errors);
     } catch (e) {

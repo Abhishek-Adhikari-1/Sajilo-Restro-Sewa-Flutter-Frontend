@@ -31,69 +31,151 @@ class TableCubit extends Cubit<TableState> {
     });
   }
 
-  Future<void> fetchTables({bool showLoading = false}) async {
-    String currentFilter = 'all';
-    bool wasLoaded = state is TableLoaded;
-    if (wasLoaded) {
-      currentFilter = (state as TableLoaded).filter;
-      if (showLoading) {
-        emit(TableLoading());
-      }
-    } else if (state is! TableLoading) {
+  Future<void> fetchTables({String? search, String? status, int limit = 25}) async {
+    final currentState = state;
+    if (currentState is! TableLoaded) {
       emit(TableLoading());
+    } else {
+      if (search != currentState.currentSearch || status != currentState.currentStatus) {
+        // We will fetch new tables
+      }
     }
+    
+    try {
+      final (fetchedTables, total) = await repository.getAllTables(
+        limit: limit, 
+        offset: 0,
+        search: search,
+        status: status,
+      );
+      
+      emit(TableLoaded(
+        tables: fetchedTables,
+        currentSearch: search,
+        currentStatus: status,
+        total: total,
+        offset: 0,
+        limit: limit,
+        editedTables: currentState is TableLoaded ? currentState.editedTables : const {},
+      ));
+    } catch (e) {
+      emit(TableError(message: e.toString()));
+    }
+  }
+
+  Future<void> fetchMoreTables(int limit) async {
+    if (state is! TableLoaded) return;
+    final currentState = state as TableLoaded;
+    
+    final newOffset = currentState.tables.length;
+    if (newOffset >= currentState.total) return;
 
     try {
-      final tables = await repository.getAllTables(
-        status: currentFilter,
-        limit: 100,
-        offset: 0,
+      final (tables, total) = await repository.getAllTables(
+        offset: newOffset,
+        limit: limit,
+        search: currentState.currentSearch,
+        status: currentState.currentStatus,
       );
-      emit(
-        TableLoaded(
-          tables,
-          filter: currentFilter,
-          hasReachedMax: tables.length < 100,
-        ),
-      );
+      
+      emit(currentState.copyWith(
+        tables: List.of(currentState.tables)..addAll(tables),
+        total: total,
+      ));
     } catch (e) {
-      emit(TableError(e.toString()));
+      emit(currentState.copyWith(errorMessage: 'Failed to fetch more tables'));
     }
   }
 
-  Future<void> fetchMoreTables() async {
-    if (state is TableLoaded) {
-      final currentState = state as TableLoaded;
-      if (currentState.hasReachedMax || currentState.isFetchingMore) return;
+  void changePage(int page, int limit) {
+    if (state is! TableLoaded) return;
+    final currentState = state as TableLoaded;
+    final newOffset = (page - 1) * limit;
+    
+    repository.getAllTables(
+      offset: newOffset,
+      limit: limit,
+      search: currentState.currentSearch,
+      status: currentState.currentStatus,
+    ).then((result) {
+      final (tables, total) = result;
+      if (isClosed) return;
+      emit(currentState.copyWith(
+        tables: tables,
+        offset: newOffset,
+        limit: limit,
+        total: total,
+      ));
+    }).catchError((e) {
+      if (isClosed) return;
+      emit(currentState.copyWith(errorMessage: 'Failed to fetch page'));
+    });
+  }
 
-      emit(currentState.copyWith(isFetchingMore: true));
+  void toggleTableStatus(String id, String originalStatus) {
+    if (state is! TableLoaded) return;
+    final currentState = state as TableLoaded;
+    
+    // Toggle between available and unavailable for quick actions
+    final newStatus = originalStatus == 'available' ? 'unavailable' : 'available';
+    
+    final Map<String, String> newEditedTables = Map.from(currentState.editedTables);
+    
+    // If it's already edited, check if the toggle reverts it to the original database state
+    final tableInDb = currentState.tables.firstWhere((t) => t.id == id);
+    if (tableInDb.status == newStatus) {
+      newEditedTables.remove(id); // Reverted back to original
+    } else {
+      newEditedTables[id] = newStatus;
+    }
+    
+    emit(currentState.copyWith(editedTables: newEditedTables));
+  }
 
-      try {
-        final tables = await repository.getAllTables(
-          status: currentState.filter,
-          limit: 100,
-          offset: currentState.tables.length,
-        );
+  void discardChanges() {
+    if (state is! TableLoaded) return;
+    final currentState = state as TableLoaded;
+    emit(currentState.copyWith(editedTables: const {}));
+  }
 
-        emit(
-          currentState.copyWith(
-            tables: List.of(currentState.tables)..addAll(tables),
-            hasReachedMax: tables.length < 100,
-            isFetchingMore: false,
-          ),
-        );
-      } catch (e) {
-        emit(currentState.copyWith(isFetchingMore: false));
-        // Just fail silently or log in a real app, keeping existing state
+  Future<void> saveChanges() async {
+    if (state is! TableLoaded) return;
+    final currentState = state as TableLoaded;
+    
+    if (currentState.editedTables.isEmpty) return;
+    
+    emit(currentState.copyWith(isSaving: true));
+    
+    try {
+      for (final entry in currentState.editedTables.entries) {
+        await repository.updateTableStatus(entry.key, entry.value);
       }
+      
+      // Re-fetch tables to get latest state
+      final (tables, total) = await repository.getAllTables(
+        offset: currentState.offset,
+        limit: currentState.limit,
+        search: currentState.currentSearch,
+        status: currentState.currentStatus,
+      );
+      
+      emit(currentState.copyWith(
+        tables: tables,
+        total: total,
+        editedTables: const {},
+        isSaving: false,
+      ));
+    } catch (e) {
+      emit(currentState.copyWith(
+        isSaving: false,
+        errorMessage: 'Failed to save changes: ${e.toString()}',
+      ));
     }
   }
 
-  void updateFilter(String filter) {
+  void clearError() {
     if (state is TableLoaded) {
-      final currentState = state as TableLoaded;
-      emit(currentState.copyWith(filter: filter));
-      fetchTables(showLoading: true);
+      emit((state as TableLoaded).copyWith(clearErrorMessage: true));
     }
   }
 

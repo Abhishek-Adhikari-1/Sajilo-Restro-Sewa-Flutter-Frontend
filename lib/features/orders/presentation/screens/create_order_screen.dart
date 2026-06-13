@@ -1,3 +1,4 @@
+import 'package:sajilo_restro_sewa/core/errors/app_error_handler.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -27,7 +28,7 @@ class CreateOrderScreen extends StatefulWidget {
 
 class _CreateOrderScreenState extends State<CreateOrderScreen> {
   String? _selectedCategoryId;
-  final List<OrderItemModel> _cart = [];
+  final ValueNotifier<List<OrderItemModel>> _cartNotifier = ValueNotifier([]);
   final TextEditingController _notesController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -45,7 +46,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     super.initState();
     context.read<MenuCubit>().fetchMenuData();
     if (widget.existingOrder != null) {
-      _cart.addAll(widget.existingOrder!.items);
+      _cartNotifier.value = List.from(widget.existingOrder!.items);
       if (widget.existingOrder!.notes != null) {
         _notesController.text = widget.existingOrder!.notes!;
       }
@@ -89,72 +90,73 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     _searchController.dispose();
     _menusScrollController.dispose();
     _categoriesScrollController.dispose();
+    _cartNotifier.dispose();
     super.dispose();
   }
 
   void _addToCart(MenuItemModel item) {
-    setState(() {
-      final existingIndex = _cart.indexWhere(
-        (element) => element.id == item.id && element.status == 'pending',
+    final currentList = List<OrderItemModel>.from(_cartNotifier.value);
+    final existingIndex = currentList.indexWhere(
+      (element) => element.id == item.id && element.status == 'pending',
+    );
+    if (existingIndex >= 0) {
+      final existing = currentList[existingIndex];
+      currentList[existingIndex] = OrderItemModel(
+        id: existing.id,
+        name: existing.name,
+        price: existing.price,
+        quantity: existing.quantity + 1,
+        specialInstructions: existing.specialInstructions,
+        status: 'pending',
       );
-      if (existingIndex >= 0) {
-        final existing = _cart[existingIndex];
-        _cart[existingIndex] = OrderItemModel(
-          id: existing.id,
-          name: existing.name,
-          price: existing.price,
-          quantity: existing.quantity + 1,
-          specialInstructions: existing.specialInstructions,
-          status: 'pending',
-        );
-      } else {
-        _cart.add(
-          OrderItemModel(
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: 1,
-          ),
-        );
-      }
-    });
-  }
-
-  void _updateQuantity(int index, int delta) {
-    setState(() {
-      final item = _cart[index];
-      final newQty = item.quantity + delta;
-      if (newQty <= 0) {
-        _cart.removeAt(index);
-      } else {
-        _cart[index] = OrderItemModel(
+    } else {
+      currentList.add(
+        OrderItemModel(
           id: item.id,
           name: item.name,
           price: item.price,
-          quantity: newQty,
-          specialInstructions: item.specialInstructions,
-          status: item.status,
-        );
-      }
-    });
+          quantity: 1,
+        ),
+      );
+    }
+    _cartNotifier.value = currentList;
   }
 
-  void _updateInstructions(int index, String? instructions) {
-    setState(() {
-      final item = _cart[index];
-      _cart[index] = OrderItemModel(
+  void _updateQuantity(int index, int delta) {
+    final currentList = List<OrderItemModel>.from(_cartNotifier.value);
+    final item = currentList[index];
+    final newQty = item.quantity + delta;
+    if (newQty <= 0) {
+      currentList.removeAt(index);
+    } else {
+      currentList[index] = OrderItemModel(
         id: item.id,
         name: item.name,
         price: item.price,
-        quantity: item.quantity,
-        specialInstructions: instructions,
+        quantity: newQty,
+        specialInstructions: item.specialInstructions,
         status: item.status,
       );
-    });
+    }
+    _cartNotifier.value = currentList;
+  }
+
+  void _updateInstructions(int index, String? instructions) {
+    final currentList = List<OrderItemModel>.from(_cartNotifier.value);
+    final item = currentList[index];
+    currentList[index] = OrderItemModel(
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+      specialInstructions: instructions,
+      status: item.status,
+    );
+    _cartNotifier.value = currentList;
   }
 
   double get _totalAmount {
-    return _cart.fold(0, (sum, item) => sum + (item.price * item.quantity));
+    return _cartNotifier.value.fold(0, (sum, item) => sum + (item.price * item.quantity));
   }
 
   Future<void> _showNotesDialog({
@@ -196,59 +198,64 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               content: Container(
                 width: double.maxFinite,
                 constraints: const BoxConstraints(maxWidth: 400),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (availableSuggestions.isNotEmpty)
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: availableSuggestions
-                            .map(
-                              (s) => ActionChip(
-                                label: Text(
-                                  s,
-                                  style: const TextStyle(fontSize: 12),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (availableSuggestions.isNotEmpty)
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
+                          children: availableSuggestions
+                              .map(
+                                (s) => ActionChip(
+                                  visualDensity: VisualDensity.compact,
+                                  label: Text(
+                                    s,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  onPressed: () {
+                                    final currentText = controller.text;
+                                    controller.text = currentText.isEmpty
+                                        ? s
+                                        : '$currentText, $s';
+                                    controller.selection =
+                                        TextSelection.collapsed(
+                                          offset: controller.text.length,
+                                        );
+                                    setDialogState(() {});
+                                  },
                                 ),
-                                onPressed: () {
-                                  final currentText = controller.text;
-                                  controller.text = currentText.isEmpty
-                                      ? s
-                                      : '$currentText, $s';
-                                  controller.selection =
-                                      TextSelection.collapsed(
-                                        offset: controller.text.length,
-                                      );
-                                  setDialogState(() {});
-                                },
-                              ),
-                            )
-                            .toList(),
-                      ),
-                    if (availableSuggestions.isNotEmpty)
-                      const SizedBox(height: 16),
-                    TextField(
-                      controller: controller,
-                      focusNode: focusNode,
-                      maxLines: 3,
-                      onChanged: (val) => setDialogState(() {}),
-                      decoration: InputDecoration(
-                        hintText: hintText,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                              )
+                              .toList(),
+                        ),
+                      if (availableSuggestions.isNotEmpty)
+                        const SizedBox(height: 16),
+                      TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        maxLines: 3,
+                        onChanged: (val) => setDialogState(() {}),
+                        decoration: InputDecoration(
+                          hintText: hintText,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               actions: [
                 TextButton(
+                  style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
                   onPressed: () => Navigator.pop(context),
                   child: const Text('Cancel'),
                 ),
                 FilledButton(
+                  style: FilledButton.styleFrom(visualDensity: VisualDensity.compact),
                   onPressed: () {
                     onSave(controller.text.trim());
                     Navigator.pop(context);
@@ -404,17 +411,15 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   }
 
   void _submitOrder() async {
-    if (_cart.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Add at least one item to the order.')),
-      );
+    if (_cartNotifier.value.isEmpty) {
+      AppErrorHandler.show(context, 'Add at least one item to the order.');
       return;
     }
 
     if (widget.existingOrder != null) {
       context.read<OrderCubit>().updateOrderItems(
         widget.existingOrder!.id,
-        _cart,
+        _cartNotifier.value,
         _notesController.text.trim(),
       );
       return;
@@ -461,10 +466,12 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
           ),
           actions: [
             TextButton(
+              style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
             FilledButton(
+              style: FilledButton.styleFrom(visualDensity: VisualDensity.compact),
               onPressed: () => Navigator.pop(context, tempCount),
               child: const Text('Confirm'),
             ),
@@ -488,7 +495,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       id: '', // Generated by backend
       tableId: widget.table.id,
       status: 'pending',
-      items: _cart,
+      items: _cartNotifier.value,
       notes: _notesController.text.isEmpty ? null : _notesController.text,
       createdBy: userId,
       guestsCount: guestsCount,
@@ -521,37 +528,20 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               : 'New Order - Table ${widget.table.tableNumber} ($availableSeats Seats Available)',
         ),
       ),
+      bottomNavigationBar: isMobile ? _buildMobileBottomBar(theme) : null,
       body: BlocListener<OrderCubit, OrderState>(
         listener: (context, state) {
           if (state is OrderError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
+            AppErrorHandler.showError(context, state.message);
           } else if (state is OrderLoaded) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  isEditing
+            AppErrorHandler.showSuccess(context, isEditing
                       ? 'Items added successfully!'
-                      : 'Order submitted successfully!',
-                ),
-                backgroundColor: Colors.green,
-              ),
-            );
+                      : 'Order submitted successfully!',);
             Navigator.pop(context);
           }
         },
         child: isMobile
-            ? Column(
-                children: [
-                  Expanded(flex: 3, child: _buildMenuBrowser(theme)),
-                  const Divider(height: 1),
-                  Expanded(flex: 2, child: _buildCart(theme)),
-                ],
-              )
+            ? _buildMenuBrowser(theme)
             : Row(
                 children: [
                   Expanded(flex: 2, child: _buildMenuBrowser(theme)),
@@ -560,6 +550,83 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                 ],
               ),
       ),
+    );
+  }
+
+  Widget _buildMobileBottomBar(ThemeData theme) {
+    return ValueListenableBuilder<List<OrderItemModel>>(
+      valueListenable: _cartNotifier,
+      builder: (context, cartItems, child) {
+        if (cartItems.isEmpty) return const SizedBox.shrink();
+        
+        return SafeArea(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${cartItems.length} Item${cartItems.length == 1 ? '' : 's'}',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      currencyFormat.format(_totalAmount),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                FilledButton.icon(
+                  onPressed: () => _showMobileCartSheet(theme),
+                  icon: const Icon(Icons.shopping_bag_outlined, size: 18),
+                  label: const Text('View Order'),
+                  style: FilledButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+  
+  void _showMobileCartSheet(ThemeData theme) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.85,
+            child: _buildCart(theme),
+          ),
+        );
+      },
     );
   }
 
@@ -805,33 +872,36 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   }
 
   Widget _buildCart(ThemeData theme) {
-    return Container(
-      color: theme.colorScheme.surface,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Order Summary',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  '${_cart.length} items',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
+    return ValueListenableBuilder<List<OrderItemModel>>(
+      valueListenable: _cartNotifier,
+      builder: (context, cartItems, child) {
+        return Container(
+          color: theme.colorScheme.surface,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Order Summary',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '${cartItems.length} items',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
               ],
             ),
           ),
           const Divider(height: 1),
           Expanded(
-            child: _cart.isEmpty
+            child: cartItems.isEmpty
                 ? Center(
                     child: Text(
                       'Cart is empty',
@@ -841,9 +911,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                     ),
                   )
                 : ListView.builder(
-                    itemCount: _cart.length,
+                    itemCount: cartItems.length,
                     itemBuilder: (context, index) {
-                      final item = _cart[index];
+                      final item = cartItems[index];
                       final canEdit = item.status == 'pending';
                       return Column(
                         children: [
@@ -1064,8 +1134,8 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                         onPressed: isLoading ? null : _submitOrder,
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 16,
+                            horizontal: 24,
+                            vertical: 12,
                           ),
                         ),
                         child: isLoading
@@ -1090,6 +1160,8 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
           ),
         ],
       ),
+    );
+      },
     );
   }
 }

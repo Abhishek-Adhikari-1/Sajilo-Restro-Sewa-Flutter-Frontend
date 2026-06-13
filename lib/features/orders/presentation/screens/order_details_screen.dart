@@ -1,3 +1,4 @@
+import 'package:sajilo_restro_sewa/core/errors/app_error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -87,11 +88,9 @@ class OrderDetailsScreen extends StatelessWidget {
 
   Widget _buildInfoCard(ThemeData theme, TableModel? currentTable, OrderModel order) {
     return Card(
-      elevation: theme.brightness == Brightness.light ? 0 : 1,
+      elevation: 0,
       shape: RoundedRectangleBorder(
-        side: theme.brightness == Brightness.light 
-            ? BorderSide(color: theme.colorScheme.outlineVariant) 
-            : BorderSide.none,
+        side: BorderSide(color: theme.colorScheme.outlineVariant.withAlpha(128)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
@@ -126,11 +125,9 @@ class OrderDetailsScreen extends StatelessWidget {
 
   Widget _buildItemsList(BuildContext context, ThemeData theme, NumberFormat format, OrderModel order) {
     return Card(
-      elevation: theme.brightness == Brightness.light ? 0 : 1,
+      elevation: 0,
       shape: RoundedRectangleBorder(
-        side: theme.brightness == Brightness.light 
-            ? BorderSide(color: theme.colorScheme.outlineVariant) 
-            : BorderSide.none,
+        side: BorderSide(color: theme.colorScheme.outlineVariant.withAlpha(128)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
@@ -251,12 +248,7 @@ class OrderDetailsScreen extends StatelessWidget {
                       'billing',
                     );
                     Navigator.pop(context); // Go back after completing
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Order completed. Table seats are freed up!'),
-                        backgroundColor: Colors.teal,
-                      ),
-                    );
+                    AppErrorHandler.show(context, 'Order completed. Table seats are freed up!');
                   },
                 ),
               ),
@@ -269,11 +261,9 @@ class OrderDetailsScreen extends StatelessWidget {
 
   Widget _buildNotesCard(ThemeData theme, OrderModel order) {
     return Card(
-      elevation: theme.brightness == Brightness.light ? 0 : 1,
+      elevation: 0,
       shape: RoundedRectangleBorder(
-        side: theme.brightness == Brightness.light 
-            ? BorderSide(color: theme.colorScheme.outlineVariant) 
-            : BorderSide.none,
+        side: BorderSide(color: theme.colorScheme.outlineVariant.withAlpha(128)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(

@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen>
             previous is LoginLoading,
         listener: (context, state) {
           if (state is Unauthenticated && state.errorMessage != null) {
-            AppErrorHandler.show(context, state.errorMessage!);
+            AppErrorHandler.showError(context, state.errorMessage!);
           }
         },
         child: isWide
