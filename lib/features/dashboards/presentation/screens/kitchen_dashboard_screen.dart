@@ -7,6 +7,7 @@ import '../../../../shared/widgets/section_header.dart';
 import '../../../auth/data/models/user_model.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../cubit/dashboard_state.dart';
+import '../../../orders/presentation/cubit/order_cubit.dart';
 
 class KitchenDashboardScreen extends StatefulWidget {
   final UserModel user;
@@ -41,8 +42,14 @@ class _KitchenDashboardScreenState extends State<KitchenDashboardScreen> {
           ],
         ),
       ),
-      body: BlocBuilder<DashboardCubit, DashboardState>(
-        builder: (context, state) {
+      body: BlocListener<OrderCubit, OrderState>(
+        listener: (context, state) {
+          if (state is OrderLoaded) {
+            context.read<DashboardCubit>().fetchDashboard('kitchen');
+          }
+        },
+        child: BlocBuilder<DashboardCubit, DashboardState>(
+          builder: (context, state) {
           if (state is DashboardLoading) {
             return ListView(
               padding: const EdgeInsets.all(16),
@@ -67,6 +74,7 @@ class _KitchenDashboardScreenState extends State<KitchenDashboardScreen> {
           }
           return const SizedBox.shrink();
         },
+      ),
       ),
     );
   }

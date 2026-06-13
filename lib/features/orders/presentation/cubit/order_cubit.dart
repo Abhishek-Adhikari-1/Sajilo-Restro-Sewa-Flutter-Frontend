@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/network/socket_client.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../data/models/order_model.dart';
 import '../../domain/repositories/order_repository.dart';
 
@@ -13,7 +14,7 @@ class OrderCubit extends Cubit<OrderState> {
 
   OrderCubit(this._repository, this._socketClient) : super(OrderInitial());
 
-  void initSocket() {
+  void initSocket(String currentUserId, String currentUserRole) {
     _socketClient.socket?.on('order_created', (data) {
       if (data == null) return;
       try {
@@ -31,6 +32,11 @@ class OrderCubit extends Cubit<OrderState> {
           } else {
             emit(OrderLoaded(orders: [...currentState.orders, newOrder]));
           }
+        }
+        
+        // Trigger notification if applicable
+        if (currentUserRole != 'admin' && newOrder.createdBy != currentUserId) {
+          NotificationService.triggerNewOrderAlert(newOrder.id);
         }
       } catch (_) {}
     });
@@ -81,6 +87,10 @@ class OrderCubit extends Cubit<OrderState> {
             return o.id == updatedOrder.id ? updatedOrder : o;
           }).toList();
           emit(OrderLoaded(orders: updatedOrders));
+          
+          if (currentUserRole != 'admin' && updatedOrder.createdBy != currentUserId) {
+            NotificationService.triggerOrderUpdatedAlert(updatedOrder.id);
+          }
         }
       } catch (_) {}
     });
@@ -101,6 +111,10 @@ class OrderCubit extends Cubit<OrderState> {
               return o.id == updatedOrder.id ? updatedOrder : o;
             }).toList();
             emit(OrderLoaded(orders: updatedOrders));
+            
+            if (currentUserRole != 'admin' && updatedOrder.createdBy != currentUserId) {
+              NotificationService.triggerOrderUpdatedAlert(updatedOrder.id);
+            }
           }
         } catch (_) {}
       }

@@ -11,6 +11,7 @@ import '../../../orders/data/models/order_model.dart';
 import '../../../orders/presentation/screens/order_details_screen.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../cubit/dashboard_state.dart';
+import '../../../orders/presentation/cubit/order_cubit.dart';
 
 class WaiterDashboardScreen extends StatefulWidget {
   final UserModel user;
@@ -45,8 +46,14 @@ class _WaiterDashboardScreenState extends State<WaiterDashboardScreen> {
           ],
         ),
       ),
-      body: BlocBuilder<DashboardCubit, DashboardState>(
-        builder: (context, state) {
+      body: BlocListener<OrderCubit, OrderState>(
+        listener: (context, state) {
+          if (state is OrderLoaded) {
+            context.read<DashboardCubit>().fetchDashboard('waiter');
+          }
+        },
+        child: BlocBuilder<DashboardCubit, DashboardState>(
+          builder: (context, state) {
           if (state is DashboardLoading) {
             return ListView(
               padding: const EdgeInsets.all(16),
@@ -71,6 +78,7 @@ class _WaiterDashboardScreenState extends State<WaiterDashboardScreen> {
           }
           return const SizedBox.shrink();
         },
+      ),
       ),
     );
   }

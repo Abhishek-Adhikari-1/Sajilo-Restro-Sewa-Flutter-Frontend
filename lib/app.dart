@@ -174,7 +174,7 @@ class AuthGate extends StatelessWidget {
             // Once connected (or if already connected), initialize listeners
             if (context.mounted) {
               context.read<TableCubit>().initSocket();
-              context.read<OrderCubit>().initSocket();
+              context.read<OrderCubit>().initSocket(state.user.id, state.user.role);
               context.read<MenuCubit>().initSocket();
             }
           });
