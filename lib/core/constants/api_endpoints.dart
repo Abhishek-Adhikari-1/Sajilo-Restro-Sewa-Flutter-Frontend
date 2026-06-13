@@ -5,6 +5,7 @@ class ApiEndpoints {
   static const String dashboardCashier = '/dashboard/cashier';
 
   static const String login = "/auth/login";
+  static const String userRegister = "/auth/user-register";
   static const String verifyEmail = "/auth/verify-email";
   static const String me = "/auth/me";
   static const String categories = "/categories";

@@ -4,6 +4,7 @@ import '../../../../features/auth/data/models/user_model.dart';
 import '../screens/admin_dashboard_screen.dart';
 import '../../../../features/settings/presentation/screens/settings_screen.dart';
 import '../screens/manage_screen.dart';
+import '../../../../features/payments/presentation/screens/billing_history_screen.dart';
 
 class AdminShell extends StatelessWidget {
   final UserModel user;
@@ -16,11 +17,13 @@ class AdminShell extends StatelessWidget {
       destinations: const [
         NavigationDestination(icon: Icon(Icons.dashboard), label: 'Dashboard'),
         NavigationDestination(icon: Icon(Icons.admin_panel_settings), label: 'Manage'),
+        NavigationDestination(icon: Icon(Icons.receipt_long), label: 'Billing'),
         NavigationDestination(icon: Icon(Icons.settings), label: 'Settings'),
       ],
       screens: [
         AdminDashboardScreen(user: user),
         const ManageScreen(),
+        const BillingHistoryScreen(),
         const SettingsScreen(),
       ],
     );

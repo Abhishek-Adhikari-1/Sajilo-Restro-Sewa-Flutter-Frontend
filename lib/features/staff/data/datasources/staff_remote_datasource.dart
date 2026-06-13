@@ -29,14 +29,12 @@ class StaffRemoteDataSource {
 
   Future<Map<String, dynamic>> createStaff(Map<String, dynamic> data) async {
     try {
-      final response = await _dio.post(ApiEndpoints.users, data: data);
+      final response = await _dio.post(ApiEndpoints.userRegister, data: data);
       final responseData = response.data;
       if (responseData is Map<String, dynamic>) {
         final userModel = UserModel.fromJson(responseData['data'] as Map<String, dynamic>);
-        final password = responseData['generatedPassword'] as String? ?? '';
         return {
           'user': userModel,
-          'generatedPassword': password,
         };
       }
       throw ApiException(message: "Invalid response from server.");

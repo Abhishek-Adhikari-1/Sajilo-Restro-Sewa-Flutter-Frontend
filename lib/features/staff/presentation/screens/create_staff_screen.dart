@@ -1,5 +1,6 @@
 import 'package:sajilo_restro_sewa/core/errors/app_error_handler.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../shared/services/image_upload_service.dart';
@@ -102,17 +103,27 @@ class _CreateStaffScreenState extends State<CreateStaffScreen> {
       ),
       body: BlocConsumer<StaffCubit, StaffState>(
         listener: (context, state) {
-          if (state is StaffLoaded && state.newStaffPassword != null) {
-            // Success! Pop back to list screen, the list screen listener will show the password dialog
+          if (state is StaffLoaded && state.recentlyCreatedStaff != null) {
+            final name = "${state.recentlyCreatedStaff!.firstName} ${state.recentlyCreatedStaff!.lastName}";
+            
+            AppErrorHandler.showSuccess(
+              context, 
+              'Staff member $name created successfully! An email has been sent with their credentials.'
+            );
+            
+            context.read<StaffCubit>().clearRecentlyCreatedStaff();
             Navigator.pop(context);
           }
         },
         builder: (context, state) {
           final isSaving = state is StaffLoaded ? state.isSaving : false;
 
-          return Form(
-            key: _formKey,
-            child: ListView(
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Form(
+                key: _formKey,
+                child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
                 Center(
@@ -198,6 +209,7 @@ class _CreateStaffScreenState extends State<CreateStaffScreen> {
                 ),
                 const SizedBox(height: 20),
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   initialValue: _selectedRole,
                   decoration: const InputDecoration(
                     labelText: 'Role',
@@ -232,24 +244,26 @@ class _CreateStaffScreenState extends State<CreateStaffScreen> {
                 const SizedBox(height: 40),
                 FilledButton(
                   onPressed: isSaving || _isUploadingImage ? null : _submitForm,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12.0),
-                    child: isSaving
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Text(
-                            'Create Staff',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 10.0),
                   ),
+                  child: isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Create Staff',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        ),
                 ),
               ],
+            ),
+              ),
             ),
           );
         },

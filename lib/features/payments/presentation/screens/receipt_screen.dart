@@ -68,11 +68,15 @@ class ReceiptScreen extends StatelessWidget {
                 // Header
                 const Icon(Icons.restaurant, size: 48, color: Colors.black),
                 const SizedBox(height: 8),
-                const Text(
-                  'SAJILO RESTRO SEWA',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 2, color: Colors.black),
+                Text(
+                  const String.fromEnvironment('RESTRO_NAME', defaultValue: 'SAJILO RESTRO SEWA').toUpperCase(),
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 2, color: Colors.black),
+                  textAlign: TextAlign.center,
                 ),
-                const Text('Kathmandu, Nepal', style: TextStyle(color: Colors.black54)),
+                const Text(
+                  String.fromEnvironment('RESTRO_LOCATION', defaultValue: 'Kathmandu, Nepal'),
+                  style: TextStyle(color: Colors.black54),
+                ),
                 const SizedBox(height: 16),
                 _buildDashedLine(),
                 const SizedBox(height: 16),
@@ -84,7 +88,8 @@ class ReceiptScreen extends StatelessWidget {
                       _buildInfoRow('Receipt No:', order.id.substring(0, 8).toUpperCase()),
                       _buildInfoRow('Date:', dateFormat.format(DateTime.now())),
                       _buildInfoRow('Table:', shortTableNumber),
-                      _buildInfoRow('Customer:', customerName),
+                      if (customerName != 'Anonymous' && customerName != 'N/A' && customerName.isNotEmpty)
+                        _buildInfoRow('Customer:', customerName),
                       if (customerPhone.isNotEmpty && customerPhone != 'N/A')
                         _buildInfoRow('Phone:', customerPhone),
                     ],

@@ -144,6 +144,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildDashboard(BuildContext context, Map<String, dynamic> data) {
     final currencyFormat = NumberFormat.currency(symbol: 'Rs. ', decimalDigits: 0);
     final period = data['period'] ?? 'today';
+    final isDesktop = MediaQuery.of(context).size.width > 800;
 
     return RefreshIndicator(
       onRefresh: () => context.read<DashboardCubit>().fetchDashboard('admin', period: period),
@@ -151,12 +152,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           GridView.count(
-            crossAxisCount: 2,
+            crossAxisCount: isDesktop ? 4 : 2,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 1.1,
+            childAspectRatio: isDesktop ? 2.5 : 1.1,
             children: [
               StatCard(
                 icon: Icons.payments,

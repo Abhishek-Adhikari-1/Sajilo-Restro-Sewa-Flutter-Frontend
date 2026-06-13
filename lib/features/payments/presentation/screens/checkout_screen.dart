@@ -214,7 +214,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              _buildCustomerSection(theme),
+                              _buildCustomerSection(theme, isMobile),
                               const SizedBox(height: 16),
                               Expanded(child: _buildOrderSummarySection(theme)),
                             ],
@@ -232,7 +232,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     flex: 1,
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.all(16),
-                      child: _buildCustomerSection(theme),
+                      child: _buildCustomerSection(theme, isMobile),
                     ),
                   ),
                   const VerticalDivider(width: 1),
@@ -285,7 +285,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _buildCustomerSection(ThemeData theme) {
+  Widget _buildCustomerSection(ThemeData theme, bool isMobile) {
     return Card(
       elevation: 2,
       child: Padding(
@@ -303,7 +303,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     TextFormField(
                       controller: _phoneController,
                       focusNode: _phoneFocusNode,
-                      autofocus: true,
+                      autofocus: !isMobile,
                       decoration: InputDecoration(
                         labelText: 'Phone Number',
                         prefixIcon: const Icon(Icons.phone),

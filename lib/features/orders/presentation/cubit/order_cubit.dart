@@ -83,13 +83,20 @@ class OrderCubit extends Cubit<OrderState> {
 
           // Otherwise it is a full order
           final updatedOrder = OrderModel.fromJson(payload);
+          // Find old order to compare state
+          final oldOrder = currentState.orders.firstWhere((o) => o.id == updatedOrder.id, orElse: () => updatedOrder);
+          
           final updatedOrders = currentState.orders.map((o) {
             return o.id == updatedOrder.id ? updatedOrder : o;
           }).toList();
           emit(OrderLoaded(orders: updatedOrders));
           
-          if (currentUserRole != 'admin' && updatedOrder.createdBy != currentUserId) {
-            NotificationService.triggerOrderUpdatedAlert(updatedOrder.id);
+          bool statusChangedToReady = oldOrder.status != 'ready' && updatedOrder.status == 'ready';
+          
+          if (statusChangedToReady) {
+            if (currentUserRole == 'waiter' || currentUserRole == 'cashier') {
+              NotificationService.triggerOrderUpdatedAlert(updatedOrder.id);
+            }
           }
         }
       } catch (_) {}
@@ -112,7 +119,7 @@ class OrderCubit extends Cubit<OrderState> {
             }).toList();
             emit(OrderLoaded(orders: updatedOrders));
             
-            if (currentUserRole != 'admin' && updatedOrder.createdBy != currentUserId) {
+            if (currentUserRole == 'kitchen') {
               NotificationService.triggerOrderUpdatedAlert(updatedOrder.id);
             }
           }
@@ -127,10 +134,29 @@ class OrderCubit extends Cubit<OrderState> {
         final updatedOrder = OrderModel.fromJson(data);
         if (state is OrderLoaded) {
           final currentState = state as OrderLoaded;
+          final oldOrder = currentState.orders.firstWhere((o) => o.id == updatedOrder.id, orElse: () => updatedOrder);
+          
           final updatedOrders = currentState.orders.map((o) {
             return o.id == updatedOrder.id ? updatedOrder : o;
           }).toList();
           emit(OrderLoaded(orders: updatedOrders));
+
+          bool anyItemBecameReady = false;
+          for (var newItem in updatedOrder.items) {
+             if (newItem.status == 'ready') {
+                final oldItem = oldOrder.items.firstWhere((i) => i.id == newItem.id, orElse: () => newItem);
+                if (oldItem.status != 'ready') {
+                   anyItemBecameReady = true;
+                   break;
+                }
+             }
+          }
+
+          if (anyItemBecameReady) {
+             if (currentUserRole == 'waiter' || currentUserRole == 'cashier') {
+                 NotificationService.triggerOrderUpdatedAlert(updatedOrder.id);
+             }
+          }
         }
       } catch (_) {}
     });

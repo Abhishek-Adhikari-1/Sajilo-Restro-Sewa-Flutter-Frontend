@@ -17,7 +17,6 @@ class StaffLoaded extends StaffState {
   final Map<String, Map<String, dynamic>> editedStaff; // userId -> { 'role': ..., 'status': ... }
   final bool isSaving;
   final String? errorMessage;
-  final String? newStaffPassword; // Temp password for recently created staff
   final UserModel? recentlyCreatedStaff;
 
   const StaffLoaded({
@@ -25,7 +24,6 @@ class StaffLoaded extends StaffState {
     required this.editedStaff,
     this.isSaving = false,
     this.errorMessage,
-    this.newStaffPassword,
     this.recentlyCreatedStaff,
   });
 
@@ -34,17 +32,15 @@ class StaffLoaded extends StaffState {
     Map<String, Map<String, dynamic>>? editedStaff,
     bool? isSaving,
     String? errorMessage,
-    String? newStaffPassword,
     UserModel? recentlyCreatedStaff,
-    bool clearPassword = false,
+    bool clearRecentlyCreated = false,
   }) {
     return StaffLoaded(
       staff: staff ?? this.staff,
       editedStaff: editedStaff ?? this.editedStaff,
       isSaving: isSaving ?? this.isSaving,
       errorMessage: errorMessage ?? this.errorMessage,
-      newStaffPassword: clearPassword ? null : (newStaffPassword ?? this.newStaffPassword),
-      recentlyCreatedStaff: clearPassword ? null : (recentlyCreatedStaff ?? this.recentlyCreatedStaff),
+      recentlyCreatedStaff: clearRecentlyCreated ? null : (recentlyCreatedStaff ?? this.recentlyCreatedStaff),
     );
   }
 
@@ -54,7 +50,6 @@ class StaffLoaded extends StaffState {
         editedStaff,
         isSaving,
         errorMessage,
-        newStaffPassword,
         recentlyCreatedStaff,
       ];
 }

@@ -110,14 +110,12 @@ class StaffCubit extends Cubit<StaffState> {
     try {
       final result = await _repository.createStaff(data);
       final newUser = result['user'];
-      final generatedPassword = result['generatedPassword'];
 
-      final updatedStaffList = List<UserModel>.from(currentState.staff)..add(newUser);
+      final updatedStaffList = await _repository.getStaff();
 
       emit(currentState.copyWith(
         staff: updatedStaffList,
         isSaving: false,
-        newStaffPassword: generatedPassword,
         recentlyCreatedStaff: newUser,
       ));
     } on ServerFailure catch (e) {
@@ -133,10 +131,10 @@ class StaffCubit extends Cubit<StaffState> {
     }
   }
 
-  void clearNewStaffPassword() {
+  void clearRecentlyCreatedStaff() {
     final currentState = state;
     if (currentState is! StaffLoaded) return;
-    emit(currentState.copyWith(clearPassword: true));
+    emit(currentState.copyWith(clearRecentlyCreated: true));
   }
 
   void clearErrorMessage() {
