@@ -11,6 +11,8 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
+const restroName = String.fromEnvironment('RESTRO_NAME', defaultValue: 'Sajilo Restro Sewa');
+
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
@@ -264,7 +266,8 @@ class _NarrowLayout extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Sajilo Restro Sewa',
+                      restroName,
+                      textAlign: TextAlign.center,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.5,
@@ -411,7 +414,7 @@ class _BrandPanel extends StatelessWidget {
                   const SizedBox(height: 32),
 
                   Text(
-                    'Sajilo\nRestro Sewa',
+                    restroName,
                     style: TextStyle(
                       fontSize: 40,
                       fontWeight: FontWeight.w800,

@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/repositories/staff_repository.dart';
 import 'staff_state.dart';
 import '../../../../core/errors/failures.dart';
-import '../../../auth/data/models/user_model.dart';
 
 class StaffCubit extends Cubit<StaffState> {
   final StaffRepository _repository;
