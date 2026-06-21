@@ -520,7 +520,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isMobile = MediaQuery.of(context).size.width < 600;
+    final isMobile = MediaQuery.of(context).size.width < 900;
     final isEditing = widget.existingOrder != null;
 
     return Scaffold(
@@ -787,7 +787,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                           gridDelegate:
                               SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount:
-                                    MediaQuery.of(context).size.width < 600
+                                    MediaQuery.of(context).size.width < 900
                                     ? 2
                                     : 3,
                                 childAspectRatio: 0.8,

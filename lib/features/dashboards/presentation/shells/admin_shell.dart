@@ -5,6 +5,7 @@ import '../screens/admin_dashboard_screen.dart';
 import '../../../../features/settings/presentation/screens/settings_screen.dart';
 import '../screens/manage_screen.dart';
 import '../../../../features/payments/presentation/screens/billing_history_screen.dart';
+import '../../../../features/payments/presentation/screens/details_panel_widget.dart';
 
 class AdminShell extends StatelessWidget {
   final UserModel user;
@@ -14,6 +15,7 @@ class AdminShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ResponsiveShell(
+      endDrawer: DetailsPanelWidget(),
       destinations: const [
         NavigationDestination(icon: Icon(Icons.dashboard), label: 'Dashboard'),
         NavigationDestination(icon: Icon(Icons.admin_panel_settings), label: 'Manage'),

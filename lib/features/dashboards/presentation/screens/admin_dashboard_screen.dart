@@ -167,9 +167,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
               StatCard(
                 icon: Icons.receipt_long,
-                iconColor: Colors.blue,
-                label: "Recent Orders",
-                value: ((data['recentOrders'] as List?)?.length ?? 0).toString(),
+                iconColor: Colors.red,
+                label: "Expenses",
+                value: currencyFormat.format(data['totalExpenses'] ?? 0),
               ),
               StatCard(
                 icon: Icons.restaurant,
@@ -186,7 +186,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ],
           ),
           const SizedBox(height: 24),
-          const SectionHeader(title: "Revenue Overview"),
+          const SectionHeader(title: "Income vs Expenses"),
           SizedBox(
             height: 250,
             child: Card(
@@ -196,69 +196,108 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 child: Builder(
                   builder: (context) {
                     final revenueTrend = data['revenueTrend'] as List<dynamic>? ?? [];
-                    if (revenueTrend.isEmpty) {
-                      return const Center(child: Text("No revenue data for this period."));
+                    final expenseTrend = data['expenseTrend'] as List<dynamic>? ?? [];
+                    
+                    if (revenueTrend.isEmpty && expenseTrend.isEmpty) {
+                      return const Center(child: Text("No financial data for this period."));
                     }
+
+                    // Combine labels from both revenue and expenses to ensure all points are covered
+                    Set<String> labelsSet = {};
+                    for (var r in revenueTrend) { labelsSet.add(r['label']); }
+                    for (var e in expenseTrend) { labelsSet.add(e['label']); }
+                    List<String> sortedLabels = labelsSet.toList()..sort();
 
                     List<BarChartGroupData> barGroups = [];
                     double maxY = 0;
 
-                    for (int i = 0; i < revenueTrend.length; i++) {
-                      final item = revenueTrend[i];
-                      final val = (item['value'] ?? 0).toDouble();
-                      if (val > maxY) maxY = val;
+                    for (int i = 0; i < sortedLabels.length; i++) {
+                      final label = sortedLabels[i];
+                      
+                      final revItem = revenueTrend.firstWhere((r) => r['label'] == label, orElse: () => null);
+                      final revVal = (revItem?['value'] ?? 0).toDouble();
+                      
+                      final expItem = expenseTrend.firstWhere((e) => e['label'] == label, orElse: () => null);
+                      final expVal = (expItem?['value'] ?? 0).toDouble();
+
+                      if (revVal > maxY) maxY = revVal;
+                      if (expVal > maxY) maxY = expVal;
                       
                       barGroups.add(
                         BarChartGroupData(
                           x: i,
                           barRods: [
                             BarChartRodData(
-                              toY: val,
-                              color: Theme.of(context).colorScheme.primary,
-                              width: 16,
-                              borderRadius: BorderRadius.circular(4),
+                              toY: revVal,
+                              color: Colors.green.shade400,
+                              width: 12,
+                              borderRadius: const BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
+                            ),
+                            BarChartRodData(
+                              toY: expVal,
+                              color: Colors.red.shade400,
+                              width: 12,
+                              borderRadius: const BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
                             ),
                           ],
                         ),
                       );
                     }
 
-                    return BarChart(
-                      BarChartData(
-                        maxY: maxY * 1.2,
-                        barGroups: barGroups,
-                        borderData: FlBorderData(show: false),
-                        gridData: const FlGridData(show: false),
-                        titlesData: FlTitlesData(
-                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              getTitlesWidget: (value, meta) {
-                                if (value.toInt() >= 0 && value.toInt() < revenueTrend.length) {
-                                  final labelRaw = revenueTrend[value.toInt()]['label']?.toString() ?? '';
-                                  // Simplistic label formatting based on period
-                                  String label = labelRaw;
-                                  if (labelRaw.length > 10) {
-                                    if (period == 'today') {
-                                      label = labelRaw.substring(11, 16); // HH:MM
-                                    } else {
-                                      label = labelRaw.substring(5, 10); // MM-DD
-                                    }
-                                  }
-                                  return Padding(
-                                    padding: const EdgeInsets.only(top: 8.0),
-                                    child: Text(label, style: const TextStyle(fontSize: 10)),
-                                  );
-                                }
-                                return const SizedBox.shrink();
-                              },
+                    return Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(width: 12, height: 12, color: Colors.green.shade400),
+                            const SizedBox(width: 4),
+                            const Text("Income", style: TextStyle(fontSize: 12)),
+                            const SizedBox(width: 16),
+                            Container(width: 12, height: 12, color: Colors.red.shade400),
+                            const SizedBox(width: 4),
+                            const Text("Expenses", style: TextStyle(fontSize: 12)),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Expanded(
+                          child: BarChart(
+                            BarChartData(
+                              maxY: maxY * 1.2,
+                              barGroups: barGroups,
+                              borderData: FlBorderData(show: false),
+                              gridData: const FlGridData(show: false),
+                              titlesData: FlTitlesData(
+                                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                bottomTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    getTitlesWidget: (value, meta) {
+                                      if (value.toInt() >= 0 && value.toInt() < sortedLabels.length) {
+                                        final labelRaw = sortedLabels[value.toInt()];
+                                        String label = labelRaw;
+                                        if (labelRaw.length > 10) {
+                                          if (period == 'today') {
+                                            label = labelRaw.substring(11, 16); // HH:MM
+                                          } else {
+                                            label = labelRaw.substring(5, 10); // MM-DD
+                                          }
+                                        }
+                                        return Padding(
+                                          padding: const EdgeInsets.only(top: 8.0),
+                                          child: Text(label, style: const TextStyle(fontSize: 10)),
+                                        );
+                                      }
+                                      return const SizedBox.shrink();
+                                    },
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                      ],
                     );
                   }
                 ),

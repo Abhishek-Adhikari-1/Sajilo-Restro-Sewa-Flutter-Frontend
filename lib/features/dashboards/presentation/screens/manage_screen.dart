@@ -4,6 +4,7 @@ import '../../../../features/menu/presentation/screens/admin_menu_screen.dart';
 import '../../../../features/orders/presentation/screens/active_orders_screen.dart';
 import '../../../../features/staff/presentation/screens/staff_list_screen.dart';
 import '../../../../features/tables/presentation/screens/admin_tables_screen.dart';
+import '../../../../features/expenses/presentation/screens/admin_expenses_screen.dart';
 
 class ManageScreen extends StatelessWidget {
   const ManageScreen({super.key});
@@ -71,6 +72,16 @@ class ManageScreen extends StatelessWidget {
               MaterialPageRoute(builder: (_) => const AdminTablesScreen()),
             ),
           ),
+          _buildManageCard(
+            context,
+            title: 'Expenses',
+            icon: Icons.account_balance_wallet,
+            color: Colors.teal,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AdminExpensesScreen()),
+            ),
+          ),
         ],
       ),
     );
@@ -105,25 +116,31 @@ class ManageScreen extends StatelessWidget {
               end: Alignment.bottomRight,
             ),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, size: 48, color: color),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
                     ),
+                    child: Icon(icon, size: 48, color: color),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

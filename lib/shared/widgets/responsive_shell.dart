@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class ResponsiveShell extends StatefulWidget {
   final List<NavigationDestination> destinations;
   final List<Widget> screens;
+  final Widget? endDrawer;
 
   const ResponsiveShell({
     super.key,
     required this.destinations,
     required this.screens,
+    this.endDrawer,
   }) : assert(destinations.length == screens.length, 'Destinations and screens must have the same length.');
 
   @override
@@ -30,6 +32,7 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
         // Mobile view (width < 600)
         if (constraints.maxWidth < 600) {
           return Scaffold(
+            endDrawer: widget.endDrawer,
             body: widget.screens[_currentIndex],
             bottomNavigationBar: NavigationBar(
               selectedIndex: _currentIndex,
@@ -41,6 +44,7 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
 
         // Web/Tablet view (NavigationRail)
         return Scaffold(
+          endDrawer: widget.endDrawer,
           body: Row(
             children: [
               NavigationRail(

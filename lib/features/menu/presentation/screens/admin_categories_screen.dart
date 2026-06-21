@@ -205,26 +205,26 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                         ),
                         const SizedBox(width: 12),
                         MediaQuery.of(context).size.width < 600
-                            ? PopupMenuButton<bool?>(
+                            ? PopupMenuButton<String>(
                                 padding: EdgeInsets.zero,
                                 tooltip: 'Filter by Status',
-                                initialValue: _isAvailableFilter,
+                                initialValue: _isAvailableFilter == null ? 'all' : _isAvailableFilter.toString(),
                                 onSelected: (val) {
                                   setState(() {
-                                    _isAvailableFilter = val;
+                                    _isAvailableFilter = val == 'all' ? null : val == 'true';
                                   });
                                 },
                                 itemBuilder: (context) => [
                                   const PopupMenuItem(
-                                    value: null,
+                                    value: 'all',
                                     child: Text('All Status'),
                                   ),
                                   const PopupMenuItem(
-                                    value: true,
+                                    value: 'true',
                                     child: Text('Available'),
                                   ),
                                   const PopupMenuItem(
-                                    value: false,
+                                    value: 'false',
                                     child: Text('Unavailable'),
                                   ),
                                 ],
@@ -240,33 +240,33 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                               )
                             : SizedBox(
                                 width: 150,
-                                child: DropdownButtonFormField<bool?>(
+                                child: DropdownButtonFormField<String>(
                                   decoration: const InputDecoration(
                                     contentPadding: EdgeInsets.symmetric(
                                       horizontal: 16,
                                       vertical: 8,
                                     ),
                                   ),
-                                  initialValue: _isAvailableFilter,
+                                  initialValue: _isAvailableFilter == null ? 'all' : _isAvailableFilter.toString(),
                                   hint: const Text('Status'),
                                   isExpanded: true,
                                   items: const [
-                                    DropdownMenuItem<bool?>(
-                                      value: null,
+                                    DropdownMenuItem<String>(
+                                      value: 'all',
                                       child: Text('All Status'),
                                     ),
-                                    DropdownMenuItem<bool?>(
-                                      value: true,
+                                    DropdownMenuItem<String>(
+                                      value: 'true',
                                       child: Text('Available'),
                                     ),
-                                    DropdownMenuItem<bool?>(
-                                      value: false,
+                                    DropdownMenuItem<String>(
+                                      value: 'false',
                                       child: Text('Unavailable'),
                                     ),
                                   ],
                                   onChanged: (val) {
                                     setState(() {
-                                      _isAvailableFilter = val;
+                                      _isAvailableFilter = val == 'all' ? null : val == 'true';
                                     });
                                   },
                                 ),

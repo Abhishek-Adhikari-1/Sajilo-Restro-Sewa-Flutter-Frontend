@@ -2,6 +2,8 @@ import 'package:sajilo_restro_sewa/core/errors/app_error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
@@ -39,6 +41,9 @@ import 'core/storage/secure_storage.dart';
 import 'features/staff/presentation/cubit/staff_cubit.dart';
 import 'features/staff/domain/repositories/staff_repository.dart';
 import 'features/staff/data/datasources/staff_remote_datasource.dart';
+import 'features/expenses/presentation/cubit/expense_cubit.dart';
+import 'features/expenses/domain/repositories/expense_repository.dart';
+import 'features/expenses/data/datasources/expense_remote_datasource.dart';
 
 class MyCustomScrollBehavior extends MaterialScrollBehavior {
   @override
@@ -138,11 +143,18 @@ class App extends StatelessWidget {
             ),
           ),
         ),
+        BlocProvider(
+          create: (_) => ExpenseCubit(
+            ExpenseRepository(
+              ExpenseRemoteDataSource(configuredDio),
+            ),
+          ),
+        ),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
           return MaterialApp(
-            title: 'Sajilo Restro Sewa',
+            title: const String.fromEnvironment('RESTRO_NAME', defaultValue: 'Sajilo Restro Sewa'),
             scrollBehavior: MyCustomScrollBehavior(),
             themeMode: themeMode,
             theme: AppTheme.lightTheme(),
@@ -179,6 +191,20 @@ class AuthGate extends StatelessWidget {
             }
           });
           context.read<TableCubit>().fetchTables();
+          
+          // Request notification permission if it's the first time
+          SharedPreferences.getInstance().then((prefs) async {
+            final hasAsked = prefs.getBool('has_asked_notif_permission') ?? false;
+            if (!hasAsked) {
+              await prefs.setBool('has_asked_notif_permission', true);
+              final status = await Permission.notification.request();
+              if (status.isGranted) {
+                await prefs.setBool('enable_notifications', true);
+              } else {
+                await prefs.setBool('enable_notifications', false);
+              }
+            }
+          });
         }
       },
       builder: (context, state) {

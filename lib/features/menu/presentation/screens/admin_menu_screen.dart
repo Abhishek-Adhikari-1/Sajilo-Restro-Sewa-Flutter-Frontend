@@ -298,30 +298,30 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                         ),
                         const SizedBox(width: 12),
                         MediaQuery.of(context).size.width < 600
-                            ? PopupMenuButton<bool?>(
+                            ? PopupMenuButton<String>(
                                 padding: EdgeInsets.zero,
                                 tooltip: 'Filter by Status',
-                                initialValue: state.currentIsAvailable,
+                                initialValue: state.currentIsAvailable == null ? 'all' : state.currentIsAvailable.toString(),
                                 onSelected: (val) {
                                   context.read<MenuCubit>().fetchMenuData(
                                     search: _searchController.text.trim(),
                                     categoryId: state.currentCategoryId,
                                     offset: 0,
                                     limit: state.limit,
-                                    isAvailable: val,
+                                    isAvailable: val == 'all' ? null : val == 'true',
                                   );
                                 },
                                 itemBuilder: (context) => [
                                   const PopupMenuItem(
-                                    value: null,
+                                    value: 'all',
                                     child: Text('All Status'),
                                   ),
                                   const PopupMenuItem(
-                                    value: true,
+                                    value: 'true',
                                     child: Text('Available'),
                                   ),
                                   const PopupMenuItem(
-                                    value: false,
+                                    value: 'false',
                                     child: Text('Unavailable'),
                                   ),
                                 ],
@@ -337,27 +337,27 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                               )
                             : SizedBox(
                                 width: 150,
-                                child: DropdownButtonFormField<bool?>(
+                                child: DropdownButtonFormField<String>(
                                   decoration: const InputDecoration(
                                     contentPadding: EdgeInsets.symmetric(
                                       horizontal: 16,
                                       vertical: 8,
                                     ),
                                   ),
-                                  initialValue: state.currentIsAvailable,
+                                  initialValue: state.currentIsAvailable == null ? 'all' : state.currentIsAvailable.toString(),
                                   hint: const Text('Status'),
                                   isExpanded: true,
                                   items: const [
-                                    DropdownMenuItem<bool?>(
-                                      value: null,
+                                    DropdownMenuItem<String>(
+                                      value: 'all',
                                       child: Text('All Status'),
                                     ),
-                                    DropdownMenuItem<bool?>(
-                                      value: true,
+                                    DropdownMenuItem<String>(
+                                      value: 'true',
                                       child: Text('Available'),
                                     ),
-                                    DropdownMenuItem<bool?>(
-                                      value: false,
+                                    DropdownMenuItem<String>(
+                                      value: 'false',
                                       child: Text('Unavailable'),
                                     ),
                                   ],
@@ -367,7 +367,7 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                                       categoryId: state.currentCategoryId,
                                       offset: 0,
                                       limit: state.limit,
-                                      isAvailable: val,
+                                      isAvailable: val == 'all' ? null : val == 'true',
                                     );
                                   },
                                 ),

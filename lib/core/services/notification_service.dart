@@ -32,7 +32,7 @@ class NotificationService {
   static Future<void> triggerNewOrderAlert(String orderId) async {
     final prefs = await SharedPreferences.getInstance();
     
-    final bool isNotificationEnabled = prefs.getBool('enable_notifications') ?? true;
+    final bool isNotificationEnabled = prefs.getBool('enable_notifications') ?? false;
     final bool isSoundEnabled = prefs.getBool('enable_sound') ?? true;
     final bool isVibrationEnabled = prefs.getBool('enable_vibration') ?? true;
 
@@ -90,7 +90,7 @@ class NotificationService {
   static Future<void> triggerOrderUpdatedAlert(String orderId) async {
     final prefs = await SharedPreferences.getInstance();
     
-    final bool isNotificationEnabled = prefs.getBool('enable_notifications') ?? true;
+    final bool isNotificationEnabled = prefs.getBool('enable_notifications') ?? false;
     final bool isSoundEnabled = prefs.getBool('enable_sound') ?? true;
     final bool isVibrationEnabled = prefs.getBool('enable_vibration') ?? true;
 

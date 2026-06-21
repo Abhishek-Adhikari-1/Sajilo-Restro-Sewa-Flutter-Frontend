@@ -6,12 +6,12 @@ class AppConstants {
   static const String tokenKey = 'session_token';
   static const String themeKey = 'app_theme_mode';
 
-  static const String hostUrl = "https://linux.iamscammer.com";
+  static const String hostUrl = "https://pathway.iamscammer.com";
   
   // ── HTTP base URL ─────────────────────────────────────────────────────────
   static String get apiBaseUrl {
     if (Platform.isAndroid) {
-      return 'https://linux.iamscammer.com/api/v1';
+      return 'https://pathway.iamscammer.com/api/v1';
     }
     return '$hostUrl/api/v1';
   }
@@ -19,7 +19,7 @@ class AppConstants {
   // ── Socket.IO server URL ──────────────────────────────────────────────────
   static String get socketUrl {
     if (Platform.isAndroid) {
-      return 'https://linux.iamscammer.com';
+      return 'https://pathway.iamscammer.com';
     }
     return hostUrl;
   }

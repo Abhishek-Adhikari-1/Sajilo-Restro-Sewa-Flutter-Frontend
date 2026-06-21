@@ -7,6 +7,7 @@ class UserModel {
   final bool emailVerified;
   final String role;
   final String? avatar;
+  final DateTime createdAt;
 
   UserModel({
     required this.id,
@@ -16,6 +17,7 @@ class UserModel {
     required this.status,
     required this.emailVerified,
     required this.role,
+    required this.createdAt,
     this.avatar,
   });
 
@@ -29,6 +31,7 @@ class UserModel {
       emailVerified: json['emailVerified'] ?? false,
       role: json['role'] ?? 'admin', // Default to admin for now if backend doesn't return role
       avatar: json['avatar'],
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : DateTime.now(),
     );
   }
 }

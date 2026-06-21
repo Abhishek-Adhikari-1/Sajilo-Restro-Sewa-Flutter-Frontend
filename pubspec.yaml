@@ -124,11 +124,11 @@ flutter_launcher_icons:
 
 flutter_native_splash:
   color: "#ffffff"
-  image: "assets/icons/icon.png"
+  image: "assets/icons/splash_icon.png"
   android: true
   ios: true
   web: false
   android_12:
-    image: "assets/icons/icon.png"
+    image: "assets/icons/splash_icon.png"
     icon_background_color: "#ffffff"
 
