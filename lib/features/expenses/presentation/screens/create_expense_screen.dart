@@ -68,7 +68,7 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
           description: _descriptionController.text.trim(),
           amount: double.parse(_amountController.text.trim()),
           category: _selectedCategory,
-          notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+          notes: _notesController.text.trim(),
           date: _selectedDate,
         );
       } else {
@@ -77,7 +77,7 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
           description: _descriptionController.text.trim(),
           amount: double.parse(_amountController.text.trim()),
           category: _selectedCategory,
-          notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+          notes: _notesController.text.trim(),
           date: _selectedDate,
         );
       }

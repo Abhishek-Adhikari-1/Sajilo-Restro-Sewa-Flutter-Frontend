@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'details_panel_widget.dart';
 import '../../../../shared/widgets/empty_state.dart';
 import '../cubit/billing_history_cubit.dart';
 import '../cubit/billing_history_state.dart';
@@ -239,6 +240,7 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
     return Builder(
       builder: (context) {
         return Scaffold(
+          endDrawer: DetailsPanelWidget(),
           appBar: AppBar(
             title: const Text('Billing History'),
             actions: [
@@ -345,7 +347,7 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
                                               child: InkWell(
                                                 onTap: () {
                                                   context.read<SidePanelCubit>().fetchOrderDetails(item.orderId);
-                                                  context.findRootAncestorStateOfType<ScaffoldState>()?.openEndDrawer();
+                                                  Scaffold.of(context).openEndDrawer();
                                                 },
                                                 onLongPress: () {
                                                   Clipboard.setData(ClipboardData(text: item.orderId));
@@ -369,7 +371,7 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
                                                     child: InkWell(
                                                       onTap: () {
                                                         context.read<SidePanelCubit>().fetchCustomerDetails(item.customerId!);
-                                                        context.findRootAncestorStateOfType<ScaffoldState>()?.openEndDrawer();
+                                                        Scaffold.of(context).openEndDrawer();
                                                       },
                                                       onLongPress: () {
                                                         Clipboard.setData(ClipboardData(text: item.customerId!));

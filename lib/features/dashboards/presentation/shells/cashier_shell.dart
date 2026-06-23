@@ -5,6 +5,7 @@ import '../screens/cashier_dashboard_screen.dart';
 import '../../../../features/settings/presentation/screens/settings_screen.dart';
 import '../../../../features/orders/presentation/screens/active_orders_screen.dart';
 import '../../../../features/payments/presentation/screens/billing_screen.dart';
+import '../../../../features/payments/presentation/screens/details_panel_widget.dart';
 
 class CashierShell extends StatelessWidget {
   final UserModel user;
@@ -14,6 +15,7 @@ class CashierShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ResponsiveShell(
+      endDrawer: DetailsPanelWidget(),
       destinations: const [
         NavigationDestination(icon: Icon(Icons.dashboard), label: 'Dashboard'),
         NavigationDestination(icon: Icon(Icons.point_of_sale), label: 'Billing'),
