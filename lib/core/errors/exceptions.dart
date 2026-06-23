@@ -18,6 +18,14 @@ class ApiException implements Exception {
       errors: validationErrors,
     );
   }
+
+  @override
+  String toString() {
+    if (errors != null && errors!.isNotEmpty) {
+      return '$message: ${errors!.map((e) => e.message).join(', ')}';
+    }
+    return message;
+  }
 }
 
 class ValidationError {

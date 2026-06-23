@@ -54,6 +54,8 @@ class MyCustomScrollBehavior extends MaterialScrollBehavior {
   };
 }
 
+final GlobalKey<NavigatorState> globalNavigatorKey = GlobalKey<NavigatorState>();
+
 class App extends StatelessWidget {
   const App({super.key});
 
@@ -154,6 +156,7 @@ class App extends StatelessWidget {
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
           return MaterialApp(
+            navigatorKey: globalNavigatorKey,
             title: const String.fromEnvironment('RESTRO_NAME', defaultValue: 'Sajilo Restro Sewa'),
             scrollBehavior: MyCustomScrollBehavior(),
             themeMode: themeMode,

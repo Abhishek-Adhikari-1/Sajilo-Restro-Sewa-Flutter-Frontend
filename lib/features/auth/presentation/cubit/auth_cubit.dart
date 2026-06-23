@@ -70,16 +70,29 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> resendVerification() async {
     final currentState = state;
-    if (currentState is EmailUnverified) {
-      emit(EmailUnverified(user: currentState.user, isResending: true));
-      try {
-        await _repository.resendVerification(currentState.user.email);
-        emit(EmailUnverified(user: currentState.user, isResending: false));
-      } catch (e) {
-        emit(EmailUnverified(user: currentState.user, isResending: false));
-        // Error handling could be added here, maybe emit a different state or use a side effect
-      }
+    if (currentState is! EmailUnverified) return;
+
+    emit(EmailUnverified(user: currentState.user, isResending: true));
+    try {
+      await _repository.resendVerification(currentState.user.email);
+      emit(EmailUnverified(
+        user: currentState.user,
+        isResending: false,
+        resendSuccess: true,
+      ));
+    } catch (e) {
+      emit(EmailUnverified(
+        user: currentState.user,
+        isResending: false,
+        resendError: e.toString(),
+      ));
     }
+  }
+
+  Future<void> verifyEmail(String token, String email) async {
+    await _repository.verifyEmail(token, email);
+    // After successful verification, we should refresh the user session
+    await checkSession();
   }
 
   Future<void> recheckStatus() async {

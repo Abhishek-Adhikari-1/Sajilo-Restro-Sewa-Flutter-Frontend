@@ -203,7 +203,25 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen>
 
                         const SizedBox(height: 40),
 
-                        BlocBuilder<AuthCubit, AuthState>(
+                        BlocConsumer<AuthCubit, AuthState>(
+                          listenWhen: (prev, curr) =>
+                              curr is EmailUnverified &&
+                              (curr.resendSuccess != null || curr.resendError != null),
+                          listener: (context, state) {
+                            if (state is EmailUnverified) {
+                              if (state.resendSuccess == true) {
+                                AppErrorHandler.showSuccess(
+                                  context,
+                                  'Verification email sent! Check your inbox.',
+                                );
+                              } else if (state.resendError != null) {
+                                AppErrorHandler.show(
+                                  context,
+                                  state.resendError!,
+                                );
+                              }
+                            }
+                          },
                           builder: (context, state) {
                             final isResending = state is EmailUnverified && state.isResending;
                             return Column(
@@ -224,10 +242,7 @@ class _EmailVerifyScreenState extends State<EmailVerifyScreen>
                                   isOutlined: true,
                                   label: 'Resend verification email',
                                   icon: Icons.send_rounded,
-                                  onPressed: () {
-                                    context.read<AuthCubit>().resendVerification();
-                                    AppErrorHandler.showSuccess(context, 'Verification email requested');
-                                  },
+                                  onPressed: () => context.read<AuthCubit>().resendVerification(),
                                 ),
                               ],
                             );

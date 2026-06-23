@@ -6,6 +6,7 @@ import '../../../../core/theme/theme_cubit.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../auth/presentation/screens/active_devices_screen.dart';
+import '../../../auth/presentation/screens/change_password_screen.dart';
 import '../../../../features/auth/data/models/user_model.dart';
 import 'package:intl/intl.dart';
 
@@ -218,6 +219,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
             clipBehavior: Clip.antiAlias,
             child: Column(
               children: [
+                ListTile(
+                  leading: const Icon(Icons.lock_reset_rounded),
+                  title: const Text('Change Password'),
+                  subtitle: const Text('Update your account password'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ChangePasswordScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.devices),
                   title: const Text('Active Devices'),

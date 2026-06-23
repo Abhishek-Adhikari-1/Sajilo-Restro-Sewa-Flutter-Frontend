@@ -4,14 +4,17 @@ import 'package:http/http.dart' as http;
 import '../constants/app_constants.dart';
 import '../errors/exceptions.dart';
 import '../storage/secure_storage.dart';
+import '../services/user_agent_service.dart';
 
 class ApiClient {
   final http.Client _client = http.Client();
 
   Future<Map<String, String>> _getHeaders({bool requiresAuth = true}) async {
+    final userAgent = await UserAgentService.getUserAgent();
     final headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
+      'User-Agent': userAgent,
     };
 
     if (requiresAuth) {

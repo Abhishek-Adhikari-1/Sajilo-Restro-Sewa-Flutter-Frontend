@@ -50,12 +50,16 @@ class AccountRestricted extends AuthState {
 class EmailUnverified extends AuthState {
   final UserModel user;
   final bool isResending;
+  final bool? resendSuccess;
+  final String? resendError;
 
   const EmailUnverified({
     required this.user,
     this.isResending = false,
+    this.resendSuccess,
+    this.resendError,
   });
 
   @override
-  List<Object?> get props => [user, isResending];
+  List<Object?> get props => [user, isResending, resendSuccess, resendError];
 }

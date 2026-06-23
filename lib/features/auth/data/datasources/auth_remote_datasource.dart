@@ -37,6 +37,25 @@ class AuthRemoteDataSource {
     await _apiClient.post('/auth/logout');
   }
 
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    await _apiClient.post(
+      '/auth/change-password',
+      body: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+        'confirmPassword': confirmPassword,
+      },
+    );
+  }
+
+  Future<void> verifyEmail(String token, String email) async {
+    await _apiClient.get('/auth/verify-email?token=$token&email=$email', requiresAuth: false);
+  }
+
   Future<void> logoutAll() async {
     await _apiClient.post('/auth/logout-all');
   }

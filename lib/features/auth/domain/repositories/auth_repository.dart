@@ -24,6 +24,22 @@ class AuthRepository {
     return _remoteDataSource.logout();
   }
 
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) {
+    return _remoteDataSource.changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+      confirmPassword: confirmPassword,
+    );
+  }
+
+  Future<void> verifyEmail(String token, String email) {
+    return _remoteDataSource.verifyEmail(token, email);
+  }
+
   Future<void> logoutAll() {
     return _remoteDataSource.logoutAll();
   }
