@@ -37,4 +37,31 @@ class StaffRepository {
       throw ServerFailure(e.toString());
     }
   }
+
+  Future<void> sendCustomEmail({
+    required String to,
+    required String subject,
+    required String body,
+  }) async {
+    try {
+      await _remoteDataSource.sendCustomEmail(to: to, subject: subject, body: body);
+    } on ApiException catch (e) {
+      throw ServerFailure(e.message, code: e.code, errors: e.errors);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  Future<Map<String, dynamic>> sendBulkEmail({
+    required String subject,
+    required String body,
+  }) async {
+    try {
+      return await _remoteDataSource.sendBulkEmail(subject: subject, body: body);
+    } on ApiException catch (e) {
+      throw ServerFailure(e.message, code: e.code, errors: e.errors);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
 }

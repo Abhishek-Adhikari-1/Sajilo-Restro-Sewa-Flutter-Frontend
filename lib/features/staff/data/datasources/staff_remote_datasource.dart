@@ -60,4 +60,45 @@ class StaffRemoteDataSource {
       throw ApiException(message: "Failed to update staff member.");
     }
   }
+
+  /// Send a custom email to a specific staff member.
+  /// Supports {{name}} and {{email}} placeholders in [body].
+  Future<void> sendCustomEmail({
+    required String to,
+    required String subject,
+    required String body,
+  }) async {
+    try {
+      await _dio.post(ApiEndpoints.emailSendCustom, data: {
+        'to': to,
+        'subject': subject,
+        'body': body,
+      });
+    } on DioException catch (e) {
+      if (e.response?.data != null && e.response?.data is Map<String, dynamic>) {
+        throw ApiException.fromJson(e.response!.data);
+      }
+      throw ApiException(message: "Failed to send email.");
+    }
+  }
+
+  /// Send a custom email to ALL staff members.
+  /// Supports {{name}} and {{email}} placeholders in [body].
+  Future<Map<String, dynamic>> sendBulkEmail({
+    required String subject,
+    required String body,
+  }) async {
+    try {
+      final response = await _dio.post(ApiEndpoints.emailSendBulk, data: {
+        'subject': subject,
+        'body': body,
+      });
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      if (e.response?.data != null && e.response?.data is Map<String, dynamic>) {
+        throw ApiException.fromJson(e.response!.data);
+      }
+      throw ApiException(message: "Failed to send bulk email.");
+    }
+  }
 }

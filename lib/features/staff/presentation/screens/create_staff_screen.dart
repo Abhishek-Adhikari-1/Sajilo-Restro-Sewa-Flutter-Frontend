@@ -107,7 +107,7 @@ class _CreateStaffScreenState extends State<CreateStaffScreen> {
             
             AppErrorHandler.showSuccess(
               context, 
-              'Staff member $name created successfully! An email has been sent with their credentials.'
+              '$name created! A welcome email with login credentials has been sent to their inbox.'
             );
             
             context.read<StaffCubit>().clearRecentlyCreatedStaff();

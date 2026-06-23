@@ -141,4 +141,23 @@ class StaffCubit extends Cubit<StaffState> {
     if (currentState is! StaffLoaded) return;
     emit(currentState.copyWith(errorMessage: null));
   }
+
+  /// Send a custom email to a specific staff member.
+  /// [body] supports {{name}} and {{email}} placeholders.
+  Future<void> sendCustomEmail({
+    required String to,
+    required String subject,
+    required String body,
+  }) async {
+    await _repository.sendCustomEmail(to: to, subject: subject, body: body);
+  }
+
+  /// Send a custom email to ALL staff members.
+  /// [body] supports {{name}} and {{email}} placeholders.
+  Future<Map<String, dynamic>> sendBulkEmail({
+    required String subject,
+    required String body,
+  }) async {
+    return await _repository.sendBulkEmail(subject: subject, body: body);
+  }
 }

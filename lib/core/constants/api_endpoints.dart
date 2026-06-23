@@ -14,4 +14,8 @@ class ApiEndpoints {
   static const String activeOrders = "/orders/active";
   static const String users = "/users";
   static const String imageUpload = "/images/upload";
+
+  // ─── Email ────────────────────────────────────────────────────────────────
+  static const String emailSendCustom = "/emails/send-custom";
+  static const String emailSendBulk = "/emails/send-bulk";
 }
