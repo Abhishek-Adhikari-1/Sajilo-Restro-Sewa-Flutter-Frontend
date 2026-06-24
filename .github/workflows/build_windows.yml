@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
     
     steps:
       - uses: actions/checkout@v4
@@ -15,11 +15,20 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.x'
+          flutter-version: '3.44.1'
           channel: 'stable'
+          cache: true
       
       - name: Install Dependencies
         run: flutter pub get
+
+      - name: Add C++ Deprecation Silence Flag
+        run: |
+          $cmakeFile = "windows\CMakeLists.txt"
+          $content = Get-Content $cmakeFile -Raw
+          $flag = "`nadd_definitions(-D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)"
+          Add-Content -Path $cmakeFile -Value $flag
+          Write-Host "✅ Added deprecation silence flag"
       
       - name: Build Windows
         run: flutter build windows --dart-define=RESTRO_NAME="Pathway Restro" --dart-define=RESTRO_LOCATION="Patan, Lalitpur"
@@ -28,7 +37,7 @@ jobs:
         run: Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath "PathwayRestro.zip"
       
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4        # Changed v3 → v4
+        uses: actions/upload-artifact@v4
         with:
           name: PathwayRestro-Windows
           path: PathwayRestro.zip

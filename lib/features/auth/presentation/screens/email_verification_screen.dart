@@ -136,7 +136,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen>
           // Animated background orbs
           AnimatedBuilder(
             animation: _bgOrbAnim,
-            builder: (_, _) => CustomPaint(
+            builder: (_, __) => CustomPaint(
               size: Size(size.width, size.height),
               painter: _OrbPainter(
                 angle: _bgOrbAnim.value,

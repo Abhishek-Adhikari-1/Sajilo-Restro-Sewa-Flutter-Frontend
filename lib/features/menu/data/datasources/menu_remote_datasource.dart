@@ -49,7 +49,7 @@ class MenuRemoteDataSource {
         'limit': limit,
         if (search != null && search.isNotEmpty) 'search': search,
         if (categoryId != null && categoryId.isNotEmpty) 'categoryId': categoryId,
-        'isAvailable': ?isAvailable,
+        if (isAvailable != null) 'isAvailable': isAvailable,
       });
       final data = response.data is Map<String, dynamic> && response.data.containsKey('menus') 
           ? response.data['menus'] 
