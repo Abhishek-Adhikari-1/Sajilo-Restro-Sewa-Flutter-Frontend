@@ -6,6 +6,7 @@ import '../../../../shared/widgets/loading_shimmer.dart';
 import '../../../../shared/widgets/empty_state.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../auth/data/models/user_model.dart';
+import '../../../../shared/utils/table_formatter.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../cubit/dashboard_state.dart';
 import '../../../payments/presentation/screens/checkout_screen.dart';
@@ -144,7 +145,7 @@ class _CashierDashboardScreenState extends State<CashierDashboardScreen> {
                     backgroundColor: Colors.green,
                     child: Icon(Icons.attach_money, color: Colors.white),
                   ),
-                  title: Text('Table ${order['table_number'] ?? (order['table_id']?.toString() ?? 'UKWN').substring(0, 4)}'),
+                  title: Text('Table ${TableFormatter.format(order['table_section'], order['table_number'], order['table_id']?.toString())}'),
                   subtitle: Text('${order['items']?.length ?? 0} items'),
                   trailing: ElevatedButton(
                     style: ElevatedButton.styleFrom(visualDensity: VisualDensity.compact),

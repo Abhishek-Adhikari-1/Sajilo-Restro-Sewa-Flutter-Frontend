@@ -10,9 +10,8 @@ import '../../data/models/order_model.dart';
 import 'create_order_screen.dart';
 import 'order_details_screen.dart';
 import '../../../../shared/widgets/custom_filter_chip.dart';
-import '../../../tables/presentation/cubit/table_cubit.dart';
-import '../../../tables/presentation/cubit/table_state.dart';
 import '../../../tables/presentation/screens/tables_screen.dart';
+import '../../../../shared/utils/table_formatter.dart';
 
 class ActiveOrdersScreen extends StatefulWidget {
   final TableModel? table;
@@ -233,7 +232,7 @@ class _ActiveOrdersScreenState extends State<ActiveOrdersScreen> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      'Table ${_getTableNumber(order.tableId, context)}',
+                      'Table ${TableFormatter.format(order.tableSection, order.tableNumber, order.tableId)}',
                       style: const TextStyle(color: Colors.grey),
                     ),
                     const SizedBox(width: 16),
@@ -327,20 +326,6 @@ class _ActiveOrdersScreenState extends State<ActiveOrdersScreen> {
         ),
       ),
     );
-  }
-
-  String _getTableNumber(String tableId, BuildContext context) {
-    if (widget.table != null && widget.table!.id == tableId) {
-      return widget.table!.tableNumber.toString();
-    }
-    final state = context.read<TableCubit>().state;
-    if (state is TableLoaded) {
-      try {
-        final table = state.tables.firstWhere((t) => t.id == tableId);
-        return table.tableNumber.toString();
-      } catch (_) {}
-    }
-    return tableId.length >= 4 ? tableId.substring(0, 4) : tableId;
   }
 
   Color _getStatusColor(String status) {

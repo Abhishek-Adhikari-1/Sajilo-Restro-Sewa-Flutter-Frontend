@@ -4,6 +4,7 @@ import '../../../../shared/widgets/stat_card.dart';
 import '../../../../shared/widgets/loading_shimmer.dart';
 import '../../../../shared/widgets/empty_state.dart';
 import '../../../../shared/widgets/section_header.dart';
+import '../../../../shared/utils/table_formatter.dart';
 import '../../../auth/data/models/user_model.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../cubit/dashboard_state.dart';
@@ -152,7 +153,7 @@ class _KitchenDashboardScreenState extends State<KitchenDashboardScreen> {
                       color: order['status'] == 'pending' ? Colors.orange : Colors.blue,
                     ),
                   ),
-                  title: Text('Table ${order['table_number'] ?? (order['table_id']?.toString() ?? 'UKWN').substring(0, 4)}'),
+                  title: Text('Table ${TableFormatter.format(order['table_section'], order['table_number'], order['table_id']?.toString())}'),
                   subtitle: Text('Status: ${order['status']?.toString() ?? 'Unknown'}'),
                   children: [
                     for (var item in (order['items'] as List<dynamic>? ?? []))

@@ -1,6 +1,9 @@
 class BillingHistoryItemModel {
   final String id;
   final String orderId;
+  final String? tableId;
+  final int? tableNumber;
+  final String? tableSection;
   final String? customerId;
   final double subtotal;
   final double totalAmount;
@@ -19,6 +22,9 @@ class BillingHistoryItemModel {
   BillingHistoryItemModel({
     required this.id,
     required this.orderId,
+    this.tableId,
+    this.tableNumber,
+    this.tableSection,
     this.customerId,
     required this.subtotal,
     required this.totalAmount,
@@ -41,6 +47,9 @@ class BillingHistoryItemModel {
     return BillingHistoryItemModel(
       id: payment['id']?.toString() ?? '',
       orderId: payment['orderId']?.toString() ?? '',
+      tableId: payment['tableId']?.toString() ?? json['table_id']?.toString(),
+      tableNumber: (payment['tableNumber'] as num?)?.toInt() ?? (json['table_number'] as num?)?.toInt(),
+      tableSection: payment['tableSection']?.toString() ?? json['table_section']?.toString(),
       customerId: payment['customerId']?.toString(),
       subtotal: (payment['subtotal'] as num?)?.toDouble() ?? 0.0,
       totalAmount: (payment['totalAmount'] as num?)?.toDouble() ?? 0.0,
@@ -52,10 +61,10 @@ class BillingHistoryItemModel {
       taxValue: (payment['taxValue'] as num?)?.toDouble(),
       notes: payment['notes']?.toString(),
       createdAt: payment['createdAt'] != null 
-          ? DateTime.parse(payment['createdAt'].toString()) 
+          ? DateTime.parse(payment['createdAt'].toString()).toLocal() 
           : DateTime.now(),
       updatedAt: payment['updatedAt'] != null 
-          ? DateTime.parse(payment['updatedAt'].toString()) 
+          ? DateTime.parse(payment['updatedAt'].toString()).toLocal() 
           : DateTime.now(),
       createdByName: json['createdByName']?.toString(),
       createdByImage: json['createdByImage']?.toString(),

@@ -42,6 +42,7 @@ class OrderModel {
   final String id;
   final String tableId;
   final int? tableNumber;
+  final String? tableSection;
   final String status;
   final List<OrderItemModel> items;
   final String? notes;
@@ -54,6 +55,7 @@ class OrderModel {
     required this.id,
     required this.tableId,
     this.tableNumber,
+    this.tableSection,
     required this.status,
     required this.items,
     this.notes,
@@ -71,6 +73,7 @@ class OrderModel {
       id: json['id'] as String? ?? '',
       tableId: json['table_id'] as String? ?? '',
       tableNumber: json['table_number'] as int?,
+      tableSection: json['table_section'] as String?,
       status: json['status'] as String? ?? 'pending',
       items: (json['items'] as List<dynamic>?)
               ?.map((e) => OrderItemModel.fromJson(e as Map<String, dynamic>))
@@ -88,6 +91,7 @@ class OrderModel {
         'id': id,
         'table_id': tableId,
         'table_number': tableNumber,
+        'table_section': tableSection,
         'status': status,
         'items': items.map((e) => e.toJson()).toList(),
         'notes': notes,
@@ -100,7 +104,7 @@ class OrderModel {
   static DateTime _parseTimestamp(dynamic json) {
     if (json == null) return DateTime.now();
     if (json is String) {
-      return DateTime.tryParse(json) ?? DateTime.now();
+      return (DateTime.tryParse(json) ?? DateTime.now()).toLocal();
     }
     if (json is Map<String, dynamic>) {
       final seconds = (json['_seconds'] as num?)?.toInt() ?? 0;

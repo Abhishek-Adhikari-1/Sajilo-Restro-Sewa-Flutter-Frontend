@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import '../../../../shared/utils/table_formatter.dart';
 import '../cubit/side_panel_cubit.dart';
 import '../cubit/side_panel_state.dart';
 
@@ -67,7 +68,7 @@ class DetailsPanelWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('Status: ${order.status.toUpperCase()}'),
-                  Text('Table: ${order.tableNumber ?? 'N/A'}'),
+                  Text('Table: ${TableFormatter.format(order.tableSection, int.tryParse(order.tableNumber ?? ''), order.tableId ?? '')}'),
                 ],
               ),
             ],

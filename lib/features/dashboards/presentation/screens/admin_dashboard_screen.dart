@@ -39,6 +39,7 @@ import '../../../../shared/widgets/loading_shimmer.dart';
 import '../../../../shared/widgets/empty_state.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../auth/data/models/user_model.dart';
+import '../../../../shared/utils/table_formatter.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../cubit/dashboard_state.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -358,7 +359,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer, fontSize: 12),
                 ),
               ),
-              title: Text('Table ${item['table_number'] ?? item['table_id'] ?? 'Unknown'}'),
+              title: Text('Table ${TableFormatter.format(item['table_section'], item['table_number'], item['table_id']?.toString())}'),
               trailing: Text(
                 item['status']?.toString().toUpperCase() ?? 'PENDING',
                 style: const TextStyle(fontWeight: FontWeight.bold),

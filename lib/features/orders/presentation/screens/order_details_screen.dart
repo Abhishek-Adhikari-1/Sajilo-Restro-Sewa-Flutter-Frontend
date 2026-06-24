@@ -6,6 +6,7 @@ import '../../data/models/order_model.dart';
 import '../../../tables/presentation/cubit/table_cubit.dart';
 import '../../../tables/presentation/cubit/table_state.dart';
 import '../../../tables/data/models/table_model.dart';
+import '../../../../shared/utils/table_formatter.dart';
 import '../cubit/order_cubit.dart';
 import 'create_order_screen.dart';
 
@@ -99,7 +100,7 @@ class OrderDetailsScreen extends StatelessWidget {
           children: [
             _buildInfoRow('Status', order.status.toUpperCase(), theme),
             const Divider(),
-            _buildInfoRow('Table', currentTable != null ? 'Table ${currentTable.tableNumber}' : 'Unknown', theme),
+            _buildInfoRow('Table', currentTable != null ? TableFormatter.format(currentTable.section, currentTable.tableNumber) : TableFormatter.format(order.tableSection, order.tableNumber, order.tableId), theme),
             const Divider(),
             _buildInfoRow('Guests', '${order.guestsCount} People', theme),
             const Divider(),

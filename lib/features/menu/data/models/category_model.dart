@@ -47,7 +47,7 @@ class CategoryModel {
   static DateTime _parseTimestamp(dynamic json) {
     if (json == null) return DateTime.now();
     if (json is String) {
-      return DateTime.tryParse(json) ?? DateTime.now();
+      return (DateTime.tryParse(json) ?? DateTime.now()).toLocal();
     }
     if (json is Map<String, dynamic>) {
       final seconds = (json['_seconds'] as num?)?.toInt() ?? 0;

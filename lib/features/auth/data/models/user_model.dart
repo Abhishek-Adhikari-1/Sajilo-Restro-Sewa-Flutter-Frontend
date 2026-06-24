@@ -31,7 +31,7 @@ class UserModel {
       emailVerified: json['emailVerified'] ?? false,
       role: json['role'] ?? 'admin', // Default to admin for now if backend doesn't return role
       avatar: json['avatar'],
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : DateTime.now(),
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']).toLocal() : DateTime.now(),
     );
   }
 }

@@ -9,7 +9,7 @@ class DashboardRemoteDataSource {
 
   Future<Map<String, dynamic>> fetchAdminDashboard({String period = 'today'}) async {
     try {
-      final response = await dio.get('${ApiEndpoints.dashboardAdmin}?period=$period');
+      final response = await dio.get('${ApiEndpoints.dashboardAdmin}?period=$period', options: Options(headers: {'X-Timezone-Offset': DateTime.now().timeZoneOffset.inMinutes.toString()}));
       final data = response.data is Map<String, dynamic> && response.data.containsKey('data') 
           ? response.data['data'] 
           : response.data;
@@ -26,7 +26,7 @@ class DashboardRemoteDataSource {
 
   Future<Map<String, dynamic>> fetchWaiterDashboard() async {
     try {
-      final response = await dio.get(ApiEndpoints.dashboardWaiter);
+      final response = await dio.get(ApiEndpoints.dashboardWaiter, options: Options(headers: {'X-Timezone-Offset': DateTime.now().timeZoneOffset.inMinutes.toString()}));
       final data = response.data is Map<String, dynamic> && response.data.containsKey('data') 
           ? response.data['data'] 
           : response.data;
@@ -43,7 +43,7 @@ class DashboardRemoteDataSource {
 
   Future<Map<String, dynamic>> fetchKitchenDashboard() async {
     try {
-      final response = await dio.get(ApiEndpoints.dashboardKitchen);
+      final response = await dio.get(ApiEndpoints.dashboardKitchen, options: Options(headers: {'X-Timezone-Offset': DateTime.now().timeZoneOffset.inMinutes.toString()}));
       final data = response.data is Map<String, dynamic> && response.data.containsKey('data') 
           ? response.data['data'] 
           : response.data;
@@ -60,7 +60,7 @@ class DashboardRemoteDataSource {
 
   Future<Map<String, dynamic>> fetchCashierDashboard() async {
     try {
-      final response = await dio.get(ApiEndpoints.dashboardCashier);
+      final response = await dio.get(ApiEndpoints.dashboardCashier, options: Options(headers: {'X-Timezone-Offset': DateTime.now().timeZoneOffset.inMinutes.toString()}));
       final data = response.data is Map<String, dynamic> && response.data.containsKey('data') 
           ? response.data['data'] 
           : response.data;

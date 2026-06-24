@@ -86,7 +86,7 @@ class TableModel {
   static DateTime _parseDate(dynamic dateString) {
     if (dateString == null) return DateTime.now();
     try {
-      return DateTime.parse(dateString);
+      return DateTime.parse(dateString).toLocal();
     } catch (e) {
       return DateTime.now();
     }

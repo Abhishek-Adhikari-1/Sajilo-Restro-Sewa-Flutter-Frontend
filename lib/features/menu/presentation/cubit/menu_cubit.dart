@@ -66,7 +66,7 @@ class MenuCubit extends Cubit<MenuState> {
                     isAvailable: updatedIsAvailable ?? m.isAvailable,
                     estimatedPreparationTime: m.estimatedPreparationTime,
                     createdAt: m.createdAt,
-                    updatedAt: DateTime.tryParse(data['updatedAt'] ?? data['updated_at'] ?? '') ?? m.updatedAt,
+                    updatedAt: DateTime.tryParse(data['updatedAt'] ?? data['updated_at'] ?? '')?.toLocal() ?? m.updatedAt,
                   ) 
                 : m;
             }).toList();

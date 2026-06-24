@@ -20,8 +20,8 @@ class ActiveSessionModel {
       id: json['id'],
       userAgent: json['userAgent'],
       ipAddress: json['ipAddress'],
-      createdAt: DateTime.parse(json['createdAt']),
-      expiresAt: DateTime.parse(json['expiresAt']),
+      createdAt: DateTime.parse(json['createdAt']).toLocal(),
+      expiresAt: DateTime.parse(json['expiresAt']).toLocal(),
       isCurrent: json['isCurrent'] ?? false,
     );
   }

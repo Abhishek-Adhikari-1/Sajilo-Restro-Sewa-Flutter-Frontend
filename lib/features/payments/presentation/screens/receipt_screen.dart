@@ -1,6 +1,7 @@
 import 'package:sajilo_restro_sewa/core/errors/app_error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../../shared/utils/table_formatter.dart';
 import '../../../orders/data/models/order_model.dart';
 
 class ReceiptScreen extends StatelessWidget {
@@ -34,8 +35,7 @@ class ReceiptScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final currencyFormat = NumberFormat.currency(symbol: 'Rs. ', decimalDigits: 0);
     final dateFormat = DateFormat('yyyy-MM-dd HH:mm');
-    final tableNumberStr = (order.tableNumber ?? order.tableId).toString();
-    final shortTableNumber = tableNumberStr.length > 4 ? tableNumberStr.substring(0, 4) : tableNumberStr;
+    final shortTableNumber = TableFormatter.format(order.tableSection, order.tableNumber, order.tableId);
 
     return Scaffold(
       backgroundColor: Colors.grey.shade200,

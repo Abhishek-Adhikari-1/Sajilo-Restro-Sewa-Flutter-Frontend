@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../shared/widgets/loading_shimmer.dart';
 import '../../../../shared/widgets/empty_state.dart';
 import '../../../tables/data/models/table_model.dart';
+import '../../../../shared/utils/table_formatter.dart';
 import '../../../menu/presentation/cubit/menu_cubit.dart';
 import '../../../menu/data/models/menu_item_model.dart';
 import '../../../menu/data/models/category_model.dart';
@@ -537,7 +538,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
             return Text(
               isEditing
                   ? 'Edit Order Items'
-                  : 'New Order - Table ${currentTable.tableNumber} ($availableSeats Seats Available)',
+                  : 'New Order - Table ${TableFormatter.format(currentTable.section, currentTable.tableNumber)} ($availableSeats Seats Available)',
             );
           },
         ),

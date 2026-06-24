@@ -10,7 +10,7 @@ class SessionModel {
   factory SessionModel.fromJson(Map<String, dynamic> json) {
     return SessionModel(
       token: json['token'] ?? '',
-      expiresAt: DateTime.parse(json['expiresAt'] ?? DateTime.now().toIso8601String()),
+      expiresAt: DateTime.parse(json['expiresAt'] ?? DateTime.now().toIso8601String()).toLocal(),
     );
   }
 }

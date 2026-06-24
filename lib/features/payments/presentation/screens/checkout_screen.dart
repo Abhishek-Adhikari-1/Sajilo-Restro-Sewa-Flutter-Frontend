@@ -2,6 +2,7 @@ import 'package:sajilo_restro_sewa/core/errors/app_error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import '../../../../shared/utils/table_formatter.dart';
 import '../../../orders/data/models/order_model.dart';
 import '../../../../core/network/api_client.dart';
 import '../cubit/payment_cubit.dart';
@@ -170,8 +171,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isMobile = MediaQuery.of(context).size.width < 800;
-    final tableNumberStr = (widget.order.tableNumber ?? widget.order.tableId).toString();
-    final shortTableNumber = tableNumberStr.length > 4 ? tableNumberStr.substring(0, 4) : tableNumberStr;
+    final shortTableNumber = TableFormatter.format(widget.order.tableSection, widget.order.tableNumber, widget.order.tableId);
 
     return Scaffold(
       appBar: AppBar(

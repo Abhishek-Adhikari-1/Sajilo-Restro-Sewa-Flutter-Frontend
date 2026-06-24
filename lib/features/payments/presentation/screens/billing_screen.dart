@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import '../../../../shared/utils/table_formatter.dart';
 import '../../../dashboards/presentation/cubit/dashboard_cubit.dart';
 import '../../../dashboards/presentation/cubit/dashboard_state.dart';
 import 'checkout_screen.dart';
@@ -101,8 +102,6 @@ class _BillingScreenState extends State<BillingScreen> {
         itemCount: servedOrders.length,
         itemBuilder: (context, index) {
           final order = servedOrders[index];
-          final tableNumber = order['table_number']?.toString() ??
-              (order['table_id']?.toString() ?? 'UKWN').substring(0, 4);
 
           // Calculate subtotal
           double subtotal = 0;
@@ -120,7 +119,7 @@ class _BillingScreenState extends State<BillingScreen> {
                 backgroundColor: Colors.green,
                 child: Icon(Icons.receipt_long, color: Colors.white),
               ),
-              title: Text('Table $tableNumber', style: const TextStyle(fontWeight: FontWeight.bold)),
+              title: Text('Table ${TableFormatter.format(order['table_section'], order['table_number'], order['table_id']?.toString())}', style: const TextStyle(fontWeight: FontWeight.bold)),
               subtitle: Text(
                 '${items.length} items • ${currencyFormat.format(subtotal)}',
               ),

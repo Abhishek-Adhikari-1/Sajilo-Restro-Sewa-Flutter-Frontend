@@ -15,6 +15,7 @@ class ApiClient {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
       'User-Agent': userAgent,
+      'X-Timezone-Offset': DateTime.now().timeZoneOffset.inMinutes.toString(),
     };
 
     if (requiresAuth) {

@@ -7,7 +7,7 @@ import '../../../../shared/widgets/empty_state.dart';
 import '../cubit/order_cubit.dart';
 import '../../data/models/order_model.dart';
 import '../../../tables/presentation/cubit/table_cubit.dart';
-import '../../../tables/presentation/cubit/table_state.dart';
+import '../../../../shared/utils/table_formatter.dart';
 
 class KitchenQueueScreen extends StatefulWidget {
   const KitchenQueueScreen({super.key});
@@ -271,7 +271,7 @@ class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Table ${order.tableNumber ?? _getTableNumber(order.tableId, context)}',
+                  'Table ${TableFormatter.format(order.tableSection, order.tableNumber, order.tableId)}',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -448,17 +448,6 @@ class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
         ),
       ),
     );
-  }
-
-  String _getTableNumber(String tableId, BuildContext context) {
-    final state = context.read<TableCubit>().state;
-    if (state is TableLoaded) {
-      try {
-        final table = state.tables.firstWhere((t) => t.id == tableId);
-        return table.tableNumber.toString();
-      } catch (_) {}
-    }
-    return tableId.substring(0, 4);
   }
 
   String timeago(DateTime d) {

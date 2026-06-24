@@ -156,7 +156,7 @@ class _WaiterDashboardScreenState extends State<WaiterDashboardScreen> {
                     '${(order['status']?.toString() ?? 'Unknown').toUpperCase()} • ${order['items']?.length ?? 0} items',
                   ),
                   trailing: Text(
-                    DateFormat('h:mm a').format(DateTime.parse(order['createdAt']?.toString() ?? DateTime.now().toIso8601String())),
+                    DateFormat('h:mm a').format(DateTime.parse(order['createdAt']?.toString() ?? DateTime.now().toIso8601String()).toLocal()),
                     style: const TextStyle(color: Colors.grey),
                   ),
                   onTap: () {

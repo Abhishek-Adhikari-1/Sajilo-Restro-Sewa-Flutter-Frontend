@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'details_panel_widget.dart';
+import '../../../../shared/utils/table_formatter.dart';
 import '../../../../shared/widgets/empty_state.dart';
 import '../cubit/billing_history_cubit.dart';
 import '../cubit/billing_history_state.dart';
@@ -406,7 +407,7 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
                                               ),
                                             ),
                                           ),
-                                          DataCell(Text(currencyFormat.format(item.totalAmount))),
+                                          DataCell(Text('Table ${TableFormatter.format(item.tableSection, item.tableNumber, item.tableId)} - ${currencyFormat.format(item.totalAmount)}')),
                                           DataCell(Text(currencyFormat.format(item.subtotal))),
                                           DataCell(Text(item.discountType?.toUpperCase() ?? '-')),
                                           DataCell(Text(item.discountValue != null ? (item.discountType == 'fixed' ? currencyFormat.format(item.discountValue) : '${item.discountValue}%') : '-')),

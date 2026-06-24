@@ -28,9 +28,9 @@ class ExpenseModel extends Equatable {
       amount: double.parse(json['amount'].toString()),
       category: json['category'],
       notes: json['notes'],
-      date: DateTime.parse(json['date']),
+      date: DateTime.parse(json['date']).toLocal(),
       createdBy: json['createdBy'],
-      createdAt: DateTime.parse(json['createdAt']),
+      createdAt: DateTime.parse(json['createdAt']).toLocal(),
     );
   }
 

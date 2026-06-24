@@ -12,6 +12,16 @@ class TableCard extends StatelessWidget {
     required this.onTap,
   });
 
+  String _getInitials(String section) {
+    return section
+        .trim()
+        .split(" ")
+        .where((word) => word.isNotEmpty)
+        .take(3)
+        .map((word) => word[0].toUpperCase())
+        .join();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -66,7 +76,7 @@ class TableCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'T-${table.tableNumber}',
+                    '${_getInitials(table.section)}-${table.tableNumber}',
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),

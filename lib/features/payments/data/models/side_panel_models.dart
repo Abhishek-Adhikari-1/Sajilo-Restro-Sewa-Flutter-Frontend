@@ -4,6 +4,8 @@ class SidePanelOrderModel {
   final int guestsCount;
   final String? notes;
   final String? tableNumber;
+  final String? tableSection;
+  final String? tableId;
   final DateTime createdAt;
   final DateTime updatedAt;
   final String? createdByName;
@@ -16,6 +18,8 @@ class SidePanelOrderModel {
     required this.guestsCount,
     this.notes,
     this.tableNumber,
+    this.tableSection,
+    this.tableId,
     required this.createdAt,
     required this.updatedAt,
     this.createdByName,
@@ -30,8 +34,10 @@ class SidePanelOrderModel {
       guestsCount: (json['guestsCount'] as num?)?.toInt() ?? 0,
       notes: json['notes']?.toString(),
       tableNumber: json['table']?['tableNumber']?.toString(),
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'].toString()) : DateTime.now(),
-      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt'].toString()) : DateTime.now(),
+      tableSection: json['table']?['section']?.toString(),
+      tableId: json['table']?['id']?.toString(),
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'].toString()).toLocal() : DateTime.now(),
+      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt'].toString()).toLocal() : DateTime.now(),
       createdByName: json['createdByUser'] != null ? '${json['createdByUser']['firstName']} ${json['createdByUser']['lastName']}' : null,
       createdByImage: json['createdByUser']?['avatar']?['secureUrl']?.toString() ?? json['createdByUser']?['avatar']?['url']?.toString(),
       items: (json['items'] as List<dynamic>?)
@@ -87,7 +93,7 @@ class SidePanelCustomerModel {
       name: json['name']?.toString() ?? 'Unknown',
       phone: json['phone']?.toString(),
       createdAt: json['createdAt'] != null 
-          ? DateTime.parse(json['createdAt'].toString()) 
+          ? DateTime.parse(json['createdAt'].toString()).toLocal() 
           : DateTime.now(),
     );
   }
