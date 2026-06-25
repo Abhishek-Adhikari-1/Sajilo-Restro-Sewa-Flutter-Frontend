@@ -26,12 +26,16 @@ class _TablesScreenState extends State<TablesScreen> {
     'occupied',
     'unavailable',
   ];
+  String _currentFilter = 'all';
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     final state = context.read<TableCubit>().state;
+    if (state is TableLoaded) {
+      _currentFilter = state.currentStatus ?? 'all';
+    }
     if (state is TableInitial) {
       context.read<TableCubit>().fetchTables();
     }
@@ -140,36 +144,30 @@ class _TablesScreenState extends State<TablesScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          BlocBuilder<TableCubit, TableState>(
-            builder: (context, state) {
-              String currentFilter = 'all';
-              if (state is TableLoaded) {
-                currentFilter = state.currentStatus ?? 'all';
-              }
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Row(
-                  children: _filters.map((filter) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: CustomFilterChip(
-                        label: filter[0].toUpperCase() + filter.substring(1),
-                        isSelected: currentFilter == filter,
-                        onSelected: (_) {
-                          if (currentFilter != filter) {
-                            context.read<TableCubit>().fetchTables(
-                              status: filter == 'all' ? null : filter,
-                              limit: state is TableLoaded ? state.limit : 25,
-                            );
-                          }
-                        },
-                      ),
-                    );
-                  }).toList(),
-                ),
-              );
-            },
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Row(
+              children: _filters.map((filter) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: CustomFilterChip(
+                    label: filter[0].toUpperCase() + filter.substring(1),
+                    isSelected: _currentFilter == filter,
+                    onSelected: (_) {
+                      if (_currentFilter != filter) {
+                        setState(() => _currentFilter = filter);
+                        final state = context.read<TableCubit>().state;
+                        context.read<TableCubit>().fetchTables(
+                          status: filter == 'all' ? null : filter,
+                          limit: state is TableLoaded ? state.limit : 25,
+                        );
+                      }
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
           ),
           Expanded(
             child: BlocBuilder<TableCubit, TableState>(

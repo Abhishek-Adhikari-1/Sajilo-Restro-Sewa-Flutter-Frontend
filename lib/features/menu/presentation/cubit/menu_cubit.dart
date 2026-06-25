@@ -100,6 +100,9 @@ class MenuCubit extends Cubit<MenuState> {
       if (currentState.categorySearch != null && currentState.categorySearch!.isNotEmpty) {
         categories = [];
       }
+      if (search != currentState.currentSearch || categoryId != currentState.currentCategoryId) {
+        emit(currentState.copyWith(isFetching: true));
+      }
     }
     
     try {
@@ -137,6 +140,7 @@ class MenuCubit extends Cubit<MenuState> {
         categoryOffset: currentState is MenuLoaded ? currentState.categoryOffset : 0,
         categoryLimit: currentState is MenuLoaded ? currentState.categoryLimit : 25,
         editedCategories: currentState is MenuLoaded ? currentState.editedCategories : const {},
+        isFetching: false,
       ));
     } on ServerFailure catch (e) {
       emit(MenuError(message: e.message));

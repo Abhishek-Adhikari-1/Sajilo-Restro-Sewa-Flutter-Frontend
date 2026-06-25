@@ -21,12 +21,24 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
   final _searchController = TextEditingController();
   Timer? _debounceTimer;
   late final MenuCubit _menuCubit;
+  String? _selectedCategoryId;
 
   @override
   void initState() {
     super.initState();
     _menuCubit = context.read<MenuCubit>();
-    _menuCubit.fetchMenuData();
+    final state = _menuCubit.state;
+    if (state is MenuLoaded) {
+      _selectedCategoryId = state.currentCategoryId;
+      _menuCubit.fetchMenuData(
+        categoryId: _selectedCategoryId,
+        search: state.currentSearch,
+        limit: state.limit == 10 ? 25 : state.limit,
+        isAvailable: state.currentIsAvailable,
+      );
+    } else {
+      _menuCubit.fetchMenuData(limit: 25);
+    }
   }
 
   @override
@@ -388,8 +400,8 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                             ? null
                             : state.categories[index - 1];
                         final isSelected = isAll
-                            ? state.currentCategoryId == null
-                            : state.currentCategoryId == category?.id;
+                            ? _selectedCategoryId == null
+                            : _selectedCategoryId == category?.id;
 
                         return Padding(
                           padding: const EdgeInsets.only(right: 8.0),
@@ -397,6 +409,7 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                             label: isAll ? 'All Categories' : category!.name,
                             isSelected: isSelected,
                             onSelected: (selected) {
+                              setState(() => _selectedCategoryId = isAll ? null : category!.id);
                               context.read<MenuCubit>().fetchMenuData(
                                 search: _searchController.text.trim(),
                                 categoryId: isAll ? null : category!.id,
@@ -411,7 +424,12 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                     ),
                   ),
                   Expanded(
-                    child: state.menus.isEmpty
+                    child: state.isFetching
+                        ? Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: LoadingShimmer.list(count: 5),
+                          )
+                        : state.menus.isEmpty
                         ? const Center(
                             child: Text('No menu items match your search.'),
                           )

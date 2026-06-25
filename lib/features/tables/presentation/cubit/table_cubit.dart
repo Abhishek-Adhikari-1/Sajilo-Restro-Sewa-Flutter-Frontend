@@ -37,7 +37,7 @@ class TableCubit extends Cubit<TableState> {
       emit(TableLoading());
     } else {
       if (search != currentState.currentSearch || status != currentState.currentStatus) {
-        // We will fetch new tables
+        emit(TableLoading());
       }
     }
     

@@ -35,6 +35,7 @@ class MenuLoaded extends MenuState {
   final bool? currentCategoryIsAvailable;
   final bool isSaving;
   final String? errorMessage;
+  final bool isFetching;
 
   const MenuLoaded({
     required this.categories,
@@ -60,6 +61,7 @@ class MenuLoaded extends MenuState {
     this.currentCategoryIsAvailable,
     this.isSaving = false,
     this.errorMessage,
+    this.isFetching = false,
   });
 
   MenuLoaded copyWith({
@@ -87,6 +89,7 @@ class MenuLoaded extends MenuState {
     bool? isSaving,
     String? errorMessage,
     bool clearErrorMessage = false,
+    bool? isFetching,
   }) {
     return MenuLoaded(
       categories: categories ?? this.categories,
@@ -112,6 +115,7 @@ class MenuLoaded extends MenuState {
       currentCategoryIsAvailable: currentCategoryIsAvailable ?? this.currentCategoryIsAvailable,
       isSaving: isSaving ?? this.isSaving,
       errorMessage: clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
+      isFetching: isFetching ?? this.isFetching,
     );
   }
 
@@ -140,6 +144,7 @@ class MenuLoaded extends MenuState {
         currentCategoryIsAvailable,
         isSaving,
         errorMessage,
+        isFetching,
       ];
 }
 

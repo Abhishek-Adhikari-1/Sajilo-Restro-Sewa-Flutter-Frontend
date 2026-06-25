@@ -47,7 +47,18 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<MenuCubit>().fetchMenuData();
+    final state = context.read<MenuCubit>().state;
+    if (state is MenuLoaded) {
+      _selectedCategoryId = state.currentCategoryId;
+      _searchQuery = state.currentSearch ?? '';
+      _searchController.text = _searchQuery;
+      context.read<MenuCubit>().fetchMenuData(
+        categoryId: _selectedCategoryId,
+        search: _searchQuery.isEmpty ? null : _searchQuery,
+      );
+    } else {
+      context.read<MenuCubit>().fetchMenuData();
+    }
     if (widget.existingOrder != null) {
       _cartNotifier.value = List.from(widget.existingOrder!.items);
       if (widget.existingOrder!.notes != null) {
@@ -771,18 +782,30 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               // Menu Items Grid
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () => context.read<MenuCubit>().fetchMenuData(),
-                  child: items.isEmpty
+                  onRefresh: () => context.read<MenuCubit>().fetchMenuData(
+                    search: _searchQuery.isEmpty ? null : _searchQuery,
+                    categoryId: _selectedCategoryId,
+                  ),
+                  child: state.isFetching
                       ? ListView(
-                          children: const [
-                            SizedBox(height: 100),
-                            EmptyState(
-                              icon: Icons.restaurant_menu,
-                              title: 'No items found',
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: LoadingShimmer.grid(count: 6),
                             ),
                           ],
                         )
-                      : GridView.builder(
+                      : items.isEmpty
+                          ? ListView(
+                              children: const [
+                                SizedBox(height: 100),
+                                EmptyState(
+                                  icon: Icons.restaurant_menu,
+                                  title: 'No items found',
+                                ),
+                              ],
+                            )
+                          : GridView.builder(
                           controller: _menusScrollController,
                           padding: const EdgeInsets.all(16),
                           gridDelegate:
