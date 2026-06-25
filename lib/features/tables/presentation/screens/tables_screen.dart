@@ -9,6 +9,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../../../shared/widgets/custom_filter_chip.dart';
 import '../../../../shared/widgets/table_card.dart';
+import '../../../../shared/utils/table_formatter.dart';
 
 class TablesScreen extends StatefulWidget {
   const TablesScreen({super.key});
@@ -263,7 +264,7 @@ class _TablesScreenState extends State<TablesScreen> {
                                       ),
                                     );
                                   } else {
-                                    AppErrorHandler.showError(context, 'Table ${table.tableNumber} is ${table.status}.');
+                                    AppErrorHandler.showError(context, '${TableFormatter.format(table.section, table.tableNumber, table.id)} is ${table.status}.');
                                   }
                                 },
                               );

@@ -7,6 +7,7 @@ import '../../../../shared/widgets/empty_state.dart';
 import '../cubit/table_cubit.dart';
 import '../cubit/table_state.dart';
 import 'add_edit_table_screen.dart';
+import '../../../../shared/utils/table_formatter.dart';
 
 class AdminTablesScreen extends StatefulWidget {
   const AdminTablesScreen({super.key});
@@ -402,7 +403,7 @@ class _AdminTablesScreenState extends State<AdminTablesScreen> {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  'Table ${table.tableNumber}',
+                                                  TableFormatter.format(table.section, table.tableNumber, table.id),
                                                   style: const TextStyle(
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 16,

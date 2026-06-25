@@ -18,6 +18,7 @@ class KitchenQueueScreen extends StatefulWidget {
 
 class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
   Timer? _refreshTimer;
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
@@ -32,6 +33,7 @@ class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
   @override
   void dispose() {
     _refreshTimer?.cancel();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -47,11 +49,11 @@ class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
               final ready = state.orders.where((o) => o.status == 'ready').length;
               return Row(
                 children: [
-                  _buildStatBadge('Pending', pending, Colors.orange),
+                  _buildStatBadge('Pending', pending, Colors.orange, 0),
                   const SizedBox(width: 8),
-                  _buildStatBadge('Preparing', preparing, Colors.blue),
+                  _buildStatBadge('Preparing', preparing, Colors.blue, 1),
                   const SizedBox(width: 8),
-                  _buildStatBadge('Ready', ready, Colors.green),
+                  _buildStatBadge('Ready', ready, Colors.green, 2),
                 ],
               );
             }
@@ -123,6 +125,7 @@ class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
                   );
                 } else {
                   return PageView(
+                    controller: _pageController,
                     children: [
                       _buildColumn('Pending', pending, Colors.orange, context),
                       _buildColumn(
@@ -144,42 +147,54 @@ class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
     );
   }
 
-  Widget _buildStatBadge(String label, int count, MaterialColor color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.shade300),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: color.shade800,
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-            ),
-          ),
-          const SizedBox(width: 6),
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              count.toString(),
-              style: const TextStyle(
-                color: Colors.white,
+  Widget _buildStatBadge(String label, int count, MaterialColor color, int pageIndex) {
+    return InkWell(
+      onTap: () {
+        if (_pageController.hasClients) {
+          _pageController.animateToPage(
+            pageIndex,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      },
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.shade300),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: color.shade800,
                 fontWeight: FontWeight.bold,
-                fontSize: 11,
+                fontSize: 13,
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                count.toString(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
