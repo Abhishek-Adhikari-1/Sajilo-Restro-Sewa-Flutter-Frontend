@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sajilo_restro_sewa/shared/widgets/version.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../../../core/theme/theme_cubit.dart';
@@ -292,12 +293,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 40),
           Center(
-            child: Text(
-              'Sajilo Restro Sewa v1.0.0',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
+            child: const AppVersionText(),
           ),
         ],
       ),
