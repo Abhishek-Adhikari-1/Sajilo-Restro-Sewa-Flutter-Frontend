@@ -18,12 +18,20 @@ class NotificationService {
     const DarwinInitializationSettings initializationSettingsDarwin = 
         DarwinInitializationSettings();
 
+    const WindowsInitializationSettings initializationSettingsWindows =
+        WindowsInitializationSettings(
+      appName: String.fromEnvironment('RESTRO_NAME', defaultValue: 'Sajilo Restro Sewa'),
+      appUserModelId: 'com.example.sajilo_restro_sewa',
+      guid: '8cbe9d8d-933e-48a0-819a-251f7bb8cf6d',
+    );
+
     const InitializationSettings initializationSettings =
         InitializationSettings(
             android: initializationSettingsAndroid,
             linux: initializationSettingsLinux,
             iOS: initializationSettingsDarwin,
             macOS: initializationSettingsDarwin,
+            windows: initializationSettingsWindows,
         );
         
     await _notificationsPlugin.initialize(settings: initializationSettings);
