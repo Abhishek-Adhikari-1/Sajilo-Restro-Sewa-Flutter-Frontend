@@ -77,7 +77,9 @@ class MenuRemoteDataSource {
       final responseData = response.data is Map<String, dynamic> &&
               response.data.containsKey('data')
           ? response.data['data']
-          : response.data;
+          : (response.data is Map<String, dynamic> && response.data.containsKey('menu')
+              ? response.data['menu']
+              : response.data);
       return MenuItemModel.fromJson(responseData as Map<String, dynamic>);
     } on DioException catch (e) {
       if (e.response?.data != null && e.response?.data is Map<String, dynamic>) {
@@ -95,7 +97,9 @@ class MenuRemoteDataSource {
       final responseData = response.data is Map<String, dynamic> &&
               response.data.containsKey('data')
           ? response.data['data']
-          : response.data;
+          : (response.data is Map<String, dynamic> && response.data.containsKey('menu')
+              ? response.data['menu']
+              : response.data);
       return MenuItemModel.fromJson(responseData as Map<String, dynamic>);
     } on DioException catch (e) {
       if (e.response?.data != null && e.response?.data is Map<String, dynamic>) {
@@ -144,7 +148,9 @@ class MenuRemoteDataSource {
       final responseData = response.data is Map<String, dynamic> &&
               response.data.containsKey('data')
           ? response.data['data']
-          : response.data;
+          : (response.data is Map<String, dynamic> && response.data.containsKey('category')
+              ? response.data['category']
+              : response.data);
       return CategoryModel.fromJson(responseData as Map<String, dynamic>);
     } on DioException catch (e) {
       if (e.response?.data != null && e.response?.data is Map<String, dynamic>) {
@@ -162,7 +168,9 @@ class MenuRemoteDataSource {
       final responseData = response.data is Map<String, dynamic> &&
               response.data.containsKey('data')
           ? response.data['data']
-          : response.data;
+          : (response.data is Map<String, dynamic> && response.data.containsKey('category')
+              ? response.data['category']
+              : response.data);
       return CategoryModel.fromJson(responseData as Map<String, dynamic>);
     } on DioException catch (e) {
       if (e.response?.data != null && e.response?.data is Map<String, dynamic>) {
